@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Variant B - Community Signal</title>
+  <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <style>
+    :root { --bg:#0f1115; --panel:#171a21; --panel2:#20242d; --line:#303642; --text:#f8fafc; --sub:#b6c0cf; --muted:#7f8a9b; --accent:#7dd3fc; --hot:#f472b6; --lime:#a3e635; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Pretendard,"Noto Sans KR",sans-serif}.wrap{max-width:1280px;margin:0 auto;padding:24px}
+    header{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:end;margin-bottom:24px}.title{font-size:42px;line-height:1.05;font-weight:900;letter-spacing:0;margin:0 0 12px}.lead{color:var(--sub);margin:0;max-width:680px}.searchbox{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.search{width:100%;height:44px;border:1px solid var(--line);border-radius:8px;background:#0c0e12;color:var(--text);padding:0 14px}
+    .layout{display:grid;grid-template-columns:1.4fr .8fr;gap:24px}.hero{display:grid;grid-template-columns:280px 1fr;gap:24px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px}.cover{aspect-ratio:1;border-radius:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px;overflow:hidden;background:#0b0d11}.tile:nth-child(1){background:#0ea5e9}.tile:nth-child(2){background:#a3e635}.tile:nth-child(3){background:#f472b6}.tile:nth-child(4){background:#f59e0b}.badge{display:inline-flex;border:1px solid rgba(125,211,252,.35);background:rgba(125,211,252,.12);color:var(--accent);padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800}.hero h2{font-size:32px;margin:16px 0 10px}.stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.stat{background:var(--panel2);border-radius:8px;padding:12px 14px;min-width:92px}.stat strong{display:block;font-size:18px}.stat span{color:var(--muted);font-size:12px}
+    .feed{display:grid;gap:12px}.post{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.post b{color:var(--text)}.post p{color:var(--sub);margin:8px 0 0}.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:24px}.mini{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}.mini-cover{height:120px;border-radius:6px;background:linear-gradient(135deg,#1e3a8a,#a3e635);margin-bottom:12px}.mini h3{margin:0 0 6px}.meta{color:var(--muted);font-size:12px}.cta{border:0;background:var(--lime);color:#111827;height:42px;border-radius:8px;padding:0 16px;font-weight:900}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><div><h1 class="title">플레이리스트는 곡보다 맥락이다</h1><p class="lead">댓글, 좋아요, 짧은 추천 문구가 먼저 보이는 커뮤니티 중심 변형입니다. 음악 앱보다 음악 게시판에 더 가깝습니다.</p></div><div class="searchbox"><input class="search" placeholder="새벽, 운동, 드라이브 검색"><button class="cta" style="margin-top:12px;width:100%">플레이리스트 만들기</button></div></header>
+    <section class="layout">
+      <main>
+        <article class="hero"><div class="cover"><span class="tile"></span><span class="tile"></span><span class="tile"></span><span class="tile"></span></div><div><span class="badge">이번 주 반응 급상승</span><h2>새벽 집중 믹스</h2><p class="lead">야간 작업, 공부, 조용한 산책에 맞춘 잔잔한 흐름. Spotify에서 가져온 곡 정보와 커뮤니티 반응을 함께 보여줍니다.</p><div class="stats"><div class="stat"><strong>42</strong><span>좋아요</span></div><div class="stat"><strong>7</strong><span>댓글</span></div><div class="stat"><strong>18</strong><span>곡</span></div></div></div></article>
+        <div class="cards"><article class="mini"><div class="mini-cover"></div><h3>퇴근길 드라이브</h3><div class="meta">mira · 좋아요 31 · 댓글 5</div></article><article class="mini"><div class="mini-cover"></div><h3>운동 전에 켜기</h3><div class="meta">admin · 좋아요 28 · 댓글 3</div></article></div>
+      </main>
+      <aside class="feed"><article class="post"><b>jiwoo</b><p>새벽 공부할 때 볼륨 낮게 틀기 좋아요.</p></article><article class="post"><b>hyeon</b><p>3번 트랙부터 흐름이 확 좋아짐.</p></article><article class="post"><b>mira</b><p>비슷한 감성으로 하나 복사해서 수정하고 싶음.</p></article></aside>
+    </section>
+  </div>
+</body>
+</html>
