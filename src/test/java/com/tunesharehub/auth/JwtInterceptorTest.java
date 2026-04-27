@@ -41,6 +41,16 @@ class JwtInterceptorTest {
     }
 
     @Test
+    void publicPlaylistDetailWithTrailingSlashDoesNotRequireToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/10/");
+
+        boolean result = jwtInterceptor.preHandle(request, response, handler);
+
+        assertThat(result).isTrue();
+        verify(jwtProvider, never()).parseAccessToken(anyString());
+    }
+
+    @Test
     void publicPlaylistTracksDoesNotRequireToken() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/10/tracks");
 
@@ -58,6 +68,15 @@ class JwtInterceptorTest {
 
         assertThat(result).isTrue();
         verify(jwtProvider, never()).parseAccessToken(anyString());
+    }
+
+    @Test
+    void malformedPublicPlaylistPathStillRequiresToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/latest");
+
+        assertThatThrownBy(() -> jwtInterceptor.preHandle(request, response, handler))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("인증 토큰이 필요합니다.");
     }
 
     @Test

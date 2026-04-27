@@ -51,7 +51,7 @@ public interface PlaylistMapper {
 
     void decreaseLikeCount(@Param("playlistId") Long playlistId);
 
-    void increaseViewCount(@Param("playlistId") Long playlistId);
+    int increaseViewCount(@Param("playlistId") Long playlistId);
 
     Long findLikeCountById(@Param("playlistId") Long playlistId);
 }

@@ -67,11 +67,37 @@ class PlaylistServiceTest {
     void getPlaylistDetailAllowsAnonymousPublicPlaylistAndIncreasesViewCount() {
         Playlist playlist = publicPlaylist();
         when(playlistMapper.findById(10L)).thenReturn(playlist);
+        when(playlistMapper.increaseViewCount(10L)).thenReturn(1);
 
         PlaylistResponse response = playlistService.getPlaylistDetail(null, 10L);
 
         verify(playlistMapper).increaseViewCount(10L);
         assertThat(response.viewCount()).isEqualTo(1L);
+    }
+
+    @Test
+    void getPlaylistDetailHandlesNullViewCount() {
+        Playlist playlist = publicPlaylist();
+        playlist.setViewCount(null);
+        when(playlistMapper.findById(10L)).thenReturn(playlist);
+        when(playlistMapper.increaseViewCount(10L)).thenReturn(1);
+
+        PlaylistResponse response = playlistService.getPlaylistDetail(null, 10L);
+
+        verify(playlistMapper).increaseViewCount(10L);
+        assertThat(response.viewCount()).isEqualTo(1L);
+    }
+
+    @Test
+    void getPlaylistDetailDoesNotIncreaseResponseViewCountWhenUpdateFails() {
+        Playlist playlist = publicPlaylist();
+        when(playlistMapper.findById(10L)).thenReturn(playlist);
+        when(playlistMapper.increaseViewCount(10L)).thenReturn(0);
+
+        PlaylistResponse response = playlistService.getPlaylistDetail(null, 10L);
+
+        verify(playlistMapper).increaseViewCount(10L);
+        assertThat(response.viewCount()).isZero();
     }
 
     @Test

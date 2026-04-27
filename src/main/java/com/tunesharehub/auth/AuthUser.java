@@ -6,4 +6,11 @@ public record AuthUser(
         String nickname,
         String role
 ) {
+
+    public static Long userIdOrNull(AuthUser authUser) {
+        if (authUser == null) {
+            return null;
+        }
+        return authUser.userId();
+    }
 }

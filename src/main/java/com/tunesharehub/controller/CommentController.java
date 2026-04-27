@@ -54,7 +54,7 @@ public class CommentController {
             @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
-        return commentService.getComments(getUserId(authUser), playlistId, page, size);
+        return commentService.getComments(AuthUser.userIdOrNull(authUser), playlistId, page, size);
     }
 
     @PutMapping("/comments/{commentId}")
@@ -73,12 +73,5 @@ public class CommentController {
             @PathVariable Long commentId
     ) {
         commentService.deleteComment(authUser.userId(), commentId);
-    }
-
-    private Long getUserId(AuthUser authUser) {
-        if (authUser == null) {
-            return null;
-        }
-        return authUser.userId();
     }
 }

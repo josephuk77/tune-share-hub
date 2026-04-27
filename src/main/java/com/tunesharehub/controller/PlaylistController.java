@@ -51,7 +51,7 @@ public class PlaylistController {
             @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId
     ) {
-        return playlistService.getPlaylistDetail(getUserId(authUser), playlistId);
+        return playlistService.getPlaylistDetail(AuthUser.userIdOrNull(authUser), playlistId);
     }
 
     @GetMapping("/playlists")
@@ -90,12 +90,5 @@ public class PlaylistController {
             @PathVariable Long playlistId
     ) {
         playlistService.deletePlaylist(authUser.userId(), playlistId);
-    }
-
-    private Long getUserId(AuthUser authUser) {
-        if (authUser == null) {
-            return null;
-        }
-        return authUser.userId();
     }
 }

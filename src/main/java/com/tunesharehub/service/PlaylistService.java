@@ -56,8 +56,11 @@ public class PlaylistService {
         Playlist playlist = getExistingPlaylist(playlistId);
         validateReadable(loginUserId, playlist);
         if (shouldIncreaseViewCount(loginUserId, playlist)) {
-            playlistMapper.increaseViewCount(playlistId);
-            playlist.setViewCount(playlist.getViewCount() + 1);
+            int updatedCount = playlistMapper.increaseViewCount(playlistId);
+            if (updatedCount == 1) {
+                long currentViewCount = playlist.getViewCount() != null ? playlist.getViewCount() : 0L;
+                playlist.setViewCount(currentViewCount + 1);
+            }
         }
         return toResponse(playlist);
     }

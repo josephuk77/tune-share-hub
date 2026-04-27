@@ -2,6 +2,7 @@ package com.tunesharehub.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -14,9 +15,10 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String PUBLIC_PLAYLISTS_PATH = "/api/playlists";
-    private static final int PLAYLIST_ID_SEGMENT_COUNT = 4;
-    private static final int PLAYLIST_CHILD_SEGMENT_COUNT = 5;
+    private static final Pattern PUBLIC_PLAYLIST_LIST_PATTERN = Pattern.compile("^/api/playlists/?$");
+    private static final Pattern PUBLIC_PLAYLIST_DETAIL_PATTERN = Pattern.compile("^/api/playlists/[1-9]\\d*/?$");
+    private static final Pattern PUBLIC_PLAYLIST_CHILD_PATTERN =
+            Pattern.compile("^/api/playlists/[1-9]\\d*/(tracks|comments)/?$");
 
     private final JwtProvider jwtProvider;
 
@@ -49,20 +51,9 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         String requestPath = getRequestPath(request);
-        if (PUBLIC_PLAYLISTS_PATH.equals(requestPath)) {
-            return true;
-        }
-        if (!requestPath.startsWith(PUBLIC_PLAYLISTS_PATH + "/")) {
-            return false;
-        }
-
-        String[] segments = requestPath.split("/");
-        if (segments.length == PLAYLIST_ID_SEGMENT_COUNT) {
-            return isPositiveLong(segments[3]);
-        }
-        return segments.length == PLAYLIST_CHILD_SEGMENT_COUNT
-                && isPositiveLong(segments[3])
-                && ("tracks".equals(segments[4]) || "comments".equals(segments[4]));
+        return PUBLIC_PLAYLIST_LIST_PATTERN.matcher(requestPath).matches()
+                || PUBLIC_PLAYLIST_DETAIL_PATTERN.matcher(requestPath).matches()
+                || PUBLIC_PLAYLIST_CHILD_PATTERN.matcher(requestPath).matches();
     }
 
     private String getRequestPath(HttpServletRequest request) {
@@ -74,11 +65,4 @@ public class JwtInterceptor implements HandlerInterceptor {
         return requestUri.substring(contextPath.length());
     }
 
-    private boolean isPositiveLong(String value) {
-        try {
-            return Long.parseLong(value) > 0;
-        } catch (NumberFormatException exception) {
-            return false;
-        }
-    }
 }

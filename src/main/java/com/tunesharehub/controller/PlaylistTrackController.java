@@ -44,7 +44,7 @@ public class PlaylistTrackController {
             @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId
     ) {
-        return playlistTrackService.getTracks(getUserId(authUser), playlistId);
+        return playlistTrackService.getTracks(AuthUser.userIdOrNull(authUser), playlistId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -64,12 +64,5 @@ public class PlaylistTrackController {
             @Valid @RequestBody PlaylistTrackReorderRequest request
     ) {
         return playlistTrackService.reorderTracks(authUser.userId(), playlistId, request);
-    }
-
-    private Long getUserId(AuthUser authUser) {
-        if (authUser == null) {
-            return null;
-        }
-        return authUser.userId();
     }
 }
