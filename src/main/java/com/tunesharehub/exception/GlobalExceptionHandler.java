@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
     }
 
+    @ExceptionHandler(SpotifyApiException.class)
+    public ResponseEntity<ErrorResponse> handleSpotifyApiException(SpotifyApiException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
