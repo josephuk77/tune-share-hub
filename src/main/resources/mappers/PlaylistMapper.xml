@@ -141,4 +141,22 @@
           AND DELETED_AT IS NULL
     </update>
 
+    <update id="increaseCommentCount">
+        UPDATE PLAYLISTS
+        SET
+            COMMENT_COUNT = COMMENT_COUNT + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="decreaseCommentCount">
+        UPDATE PLAYLISTS
+        SET
+            COMMENT_COUNT = GREATEST(COMMENT_COUNT - 1, 0),
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
 </mapper>

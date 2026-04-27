@@ -123,6 +123,15 @@ public class PlaylistService {
         validateOwner(userId, playlist);
     }
 
+    @Transactional
+    public void validateReadableForUpdate(Long userId, Long playlistId) {
+        Playlist playlist = playlistMapper.findByIdForUpdate(playlistId);
+        if (playlist == null) {
+            throw new PlaylistNotFoundException();
+        }
+        validateReadable(userId, playlist);
+    }
+
     private PlaylistResponse toResponse(Playlist playlist) {
         return new PlaylistResponse(
                 playlist.getPlaylistId(),

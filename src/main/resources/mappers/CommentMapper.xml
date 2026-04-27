@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tunesharehub.mapper.CommentMapper">
+
+    <insert id="insert" parameterType="com.tunesharehub.entity.Comment">
+        <selectKey keyProperty="commentId" resultType="long" order="BEFORE">
+            SELECT SEQ_COMMENTS.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO COMMENTS (
+            COMMENT_ID,
+            PLAYLIST_ID,
+            USER_ID,
+            CONTENT
+        ) VALUES (
+            #{commentId},
+            #{playlistId},
+            #{userId},
+            #{content, jdbcType=CLOB}
+        )
+    </insert>
+
+    <select id="findById" resultType="com.tunesharehub.entity.Comment">
+        SELECT
+            C.COMMENT_ID,
+            C.PLAYLIST_ID,
+            C.USER_ID,
+            U.NICKNAME AS USER_NICKNAME,
+            C.CONTENT,
+            C.CREATED_AT,
+            C.UPDATED_AT,
+            C.DELETED_AT
+        FROM COMMENTS C
+        JOIN PLAYLISTS P ON P.PLAYLIST_ID = C.PLAYLIST_ID
+        JOIN USERS U ON U.USER_ID = C.USER_ID
+        WHERE C.COMMENT_ID = #{commentId}
+          AND C.DELETED_AT IS NULL
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+    </select>
+
+    <select id="findByIdForUpdate" resultType="com.tunesharehub.entity.Comment">
+        SELECT
+            C.COMMENT_ID,
+            C.PLAYLIST_ID,
+            C.USER_ID,
+            U.NICKNAME AS USER_NICKNAME,
+            C.CONTENT,
+            C.CREATED_AT,
+            C.UPDATED_AT,
+            C.DELETED_AT
+        FROM COMMENTS C
+        JOIN PLAYLISTS P ON P.PLAYLIST_ID = C.PLAYLIST_ID
+        JOIN USERS U ON U.USER_ID = C.USER_ID
+        WHERE C.COMMENT_ID = #{commentId}
+          AND C.DELETED_AT IS NULL
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        FOR UPDATE
+    </select>
+
+    <select id="findByPlaylistId" resultType="com.tunesharehub.entity.Comment">
+        SELECT
+            C.COMMENT_ID,
+            C.PLAYLIST_ID,
+            C.USER_ID,
+            U.NICKNAME AS USER_NICKNAME,
+            C.CONTENT,
+            C.CREATED_AT,
+            C.UPDATED_AT,
+            C.DELETED_AT
+        FROM COMMENTS C
+        JOIN USERS U ON U.USER_ID = C.USER_ID
+        WHERE C.PLAYLIST_ID = #{playlistId}
+          AND C.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        ORDER BY C.CREATED_AT ASC, C.COMMENT_ID ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <update id="updateOwned" parameterType="com.tunesharehub.entity.Comment">
+        UPDATE COMMENTS
+        SET
+            CONTENT = #{content, jdbcType=CLOB},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE COMMENT_ID = #{commentId}
+          AND USER_ID = #{userId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="softDeleteOwned">
+        UPDATE COMMENTS
+        SET
+            DELETED_AT = SYSTIMESTAMP,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE COMMENT_ID = #{commentId}
+          AND USER_ID = #{userId}
+          AND DELETED_AT IS NULL
+    </update>
+
+</mapper>
