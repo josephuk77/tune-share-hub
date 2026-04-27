@@ -171,4 +171,29 @@
           AND DELETED_AT IS NULL
     </update>
 
+    <update id="increaseLikeCount">
+        UPDATE PLAYLISTS
+        SET
+            LIKE_COUNT = LIKE_COUNT + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="decreaseLikeCount">
+        UPDATE PLAYLISTS
+        SET
+            LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0),
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <select id="findLikeCountById" resultType="long">
+        SELECT LIKE_COUNT
+        FROM PLAYLISTS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </select>
+
 </mapper>
