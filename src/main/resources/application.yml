@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: tune-share-hub
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${DB_URL:jdbc:oracle:thin:@localhost:1521/XEPDB1}
+    username: ${DB_USERNAME:tune_share}
+    password: ${DB_PASSWORD:change-me}
+
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.tunesharehub.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-9f4c8e2a7b6d41c0a35e92f18d7b64aa}
+  access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:60}
+  refresh-token-expiration-days: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:14}
+
+spotify:
+  client-id: ${SPOTIFY_CLIENT_ID:}
+  client-secret: ${SPOTIFY_CLIENT_SECRET:}
+  token-url: https://accounts.spotify.com/api/token
+  api-base-url: https://api.spotify.com/v1
