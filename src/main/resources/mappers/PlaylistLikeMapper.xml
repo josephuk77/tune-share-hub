@@ -34,9 +34,7 @@
 
     <update id="recover">
         UPDATE PLAYLIST_LIKES
-        SET
-            DELETED_AT = NULL,
-            CREATED_AT = SYSTIMESTAMP
+        SET DELETED_AT = NULL
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
           AND DELETED_AT IS NOT NULL

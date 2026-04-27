@@ -173,18 +173,14 @@
 
     <update id="increaseLikeCount">
         UPDATE PLAYLISTS
-        SET
-            LIKE_COUNT = LIKE_COUNT + 1,
-            UPDATED_AT = SYSTIMESTAMP
+        SET LIKE_COUNT = LIKE_COUNT + 1
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </update>
 
     <update id="decreaseLikeCount">
         UPDATE PLAYLISTS
-        SET
-            LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0),
-            UPDATED_AT = SYSTIMESTAMP
+        SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0)
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </update>

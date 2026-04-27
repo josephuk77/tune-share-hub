@@ -13,9 +13,11 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DuplicateKeyException;
 
 @ExtendWith(MockitoExtension.class)
 class PlaylistLikeServiceTest {
@@ -43,11 +45,25 @@ class PlaylistLikeServiceTest {
         PlaylistLikeResponse response = playlistLikeService.likePlaylist(USER_ID, PLAYLIST_ID);
 
         ArgumentCaptor<PlaylistLike> captor = ArgumentCaptor.forClass(PlaylistLike.class);
-        verify(playlistService).validateReadableForUpdate(USER_ID, PLAYLIST_ID);
+        verify(playlistService).validateReadable(USER_ID, PLAYLIST_ID);
         verify(playlistLikeMapper).insert(captor.capture());
         verify(playlistMapper).increaseLikeCount(PLAYLIST_ID);
         assertThat(captor.getValue().getPlaylistId()).isEqualTo(PLAYLIST_ID);
         assertThat(captor.getValue().getUserId()).isEqualTo(USER_ID);
+        assertThat(response).isEqualTo(new PlaylistLikeResponse(PLAYLIST_ID, true, 1L));
+    }
+
+    @Test
+    void likePlaylistDoesNotIncreaseCountWhenConcurrentInsertAlreadyCreatedLike() {
+        when(playlistLikeMapper.findByPlaylistIdAndUserId(PLAYLIST_ID, USER_ID)).thenReturn(null);
+        org.mockito.Mockito.doThrow(new DuplicateKeyException("duplicate like"))
+                .when(playlistLikeMapper)
+                .insert(ArgumentMatchers.any(PlaylistLike.class));
+        when(playlistMapper.findLikeCountById(PLAYLIST_ID)).thenReturn(1L);
+
+        PlaylistLikeResponse response = playlistLikeService.likePlaylist(USER_ID, PLAYLIST_ID);
+
+        verify(playlistMapper, never()).increaseLikeCount(PLAYLIST_ID);
         assertThat(response).isEqualTo(new PlaylistLikeResponse(PLAYLIST_ID, true, 1L));
     }
 
@@ -67,6 +83,7 @@ class PlaylistLikeServiceTest {
     @Test
     void likePlaylistRecoversDeletedLikeAndIncreasesCount() {
         when(playlistLikeMapper.findByPlaylistIdAndUserId(PLAYLIST_ID, USER_ID)).thenReturn(deletedLike());
+        when(playlistLikeMapper.recover(PLAYLIST_ID, USER_ID)).thenReturn(1);
         when(playlistMapper.findLikeCountById(PLAYLIST_ID)).thenReturn(1L);
 
         PlaylistLikeResponse response = playlistLikeService.likePlaylist(USER_ID, PLAYLIST_ID);
@@ -77,14 +94,39 @@ class PlaylistLikeServiceTest {
     }
 
     @Test
+    void likePlaylistDoesNotIncreaseCountWhenConcurrentRecoverAlreadyActivatedLike() {
+        when(playlistLikeMapper.findByPlaylistIdAndUserId(PLAYLIST_ID, USER_ID)).thenReturn(deletedLike());
+        when(playlistLikeMapper.recover(PLAYLIST_ID, USER_ID)).thenReturn(0);
+        when(playlistMapper.findLikeCountById(PLAYLIST_ID)).thenReturn(1L);
+
+        PlaylistLikeResponse response = playlistLikeService.likePlaylist(USER_ID, PLAYLIST_ID);
+
+        verify(playlistMapper, never()).increaseLikeCount(PLAYLIST_ID);
+        assertThat(response).isEqualTo(new PlaylistLikeResponse(PLAYLIST_ID, true, 1L));
+    }
+
+    @Test
     void unlikePlaylistSoftDeletesActiveLikeAndDecreasesCount() {
         when(playlistLikeMapper.findByPlaylistIdAndUserId(PLAYLIST_ID, USER_ID)).thenReturn(activeLike());
+        when(playlistLikeMapper.softDelete(PLAYLIST_ID, USER_ID)).thenReturn(1);
         when(playlistMapper.findLikeCountById(PLAYLIST_ID)).thenReturn(0L);
 
         PlaylistLikeResponse response = playlistLikeService.unlikePlaylist(USER_ID, PLAYLIST_ID);
 
         verify(playlistLikeMapper).softDelete(PLAYLIST_ID, USER_ID);
         verify(playlistMapper).decreaseLikeCount(PLAYLIST_ID);
+        assertThat(response).isEqualTo(new PlaylistLikeResponse(PLAYLIST_ID, false, 0L));
+    }
+
+    @Test
+    void unlikePlaylistDoesNotDecreaseCountWhenConcurrentDeleteAlreadyRevokedLike() {
+        when(playlistLikeMapper.findByPlaylistIdAndUserId(PLAYLIST_ID, USER_ID)).thenReturn(activeLike());
+        when(playlistLikeMapper.softDelete(PLAYLIST_ID, USER_ID)).thenReturn(0);
+        when(playlistMapper.findLikeCountById(PLAYLIST_ID)).thenReturn(0L);
+
+        PlaylistLikeResponse response = playlistLikeService.unlikePlaylist(USER_ID, PLAYLIST_ID);
+
+        verify(playlistMapper, never()).decreaseLikeCount(PLAYLIST_ID);
         assertThat(response).isEqualTo(new PlaylistLikeResponse(PLAYLIST_ID, false, 0L));
     }
 
