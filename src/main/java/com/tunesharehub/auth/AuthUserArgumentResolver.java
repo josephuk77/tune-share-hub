@@ -28,6 +28,10 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
                 NativeWebRequest.SCOPE_REQUEST
         );
         if (!(authUser instanceof AuthUser)) {
+            CurrentUser currentUser = parameter.getParameterAnnotation(CurrentUser.class);
+            if (currentUser != null && !currentUser.required()) {
+                return null;
+            }
             throw new UnauthorizedException("인증 사용자 정보가 필요합니다.");
         }
         return authUser;

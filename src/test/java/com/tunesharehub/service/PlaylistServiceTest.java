@@ -2,6 +2,7 @@ package com.tunesharehub.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +61,28 @@ class PlaylistServiceTest {
         assertThatThrownBy(() -> playlistService.getPublicPlaylists("", "title", "popular", 0, 20))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("정렬 값이 올바르지 않습니다.");
+    }
+
+    @Test
+    void getPlaylistDetailAllowsAnonymousPublicPlaylistAndIncreasesViewCount() {
+        Playlist playlist = publicPlaylist();
+        when(playlistMapper.findById(10L)).thenReturn(playlist);
+
+        PlaylistResponse response = playlistService.getPlaylistDetail(null, 10L);
+
+        verify(playlistMapper).increaseViewCount(10L);
+        assertThat(response.viewCount()).isEqualTo(1L);
+    }
+
+    @Test
+    void getPlaylistDetailDoesNotIncreaseOwnerViewCount() {
+        Playlist playlist = publicPlaylist();
+        when(playlistMapper.findById(10L)).thenReturn(playlist);
+
+        PlaylistResponse response = playlistService.getPlaylistDetail(1L, 10L);
+
+        verify(playlistMapper, never()).increaseViewCount(10L);
+        assertThat(response.viewCount()).isZero();
     }
 
     private Playlist publicPlaylist() {

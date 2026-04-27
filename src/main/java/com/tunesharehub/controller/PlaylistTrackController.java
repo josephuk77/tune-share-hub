@@ -41,10 +41,10 @@ public class PlaylistTrackController {
 
     @GetMapping
     public List<PlaylistTrackResponse> getTracks(
-            @CurrentUser AuthUser authUser,
+            @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId
     ) {
-        return playlistTrackService.getTracks(authUser.userId(), playlistId);
+        return playlistTrackService.getTracks(getUserId(authUser), playlistId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -64,5 +64,12 @@ public class PlaylistTrackController {
             @Valid @RequestBody PlaylistTrackReorderRequest request
     ) {
         return playlistTrackService.reorderTracks(authUser.userId(), playlistId, request);
+    }
+
+    private Long getUserId(AuthUser authUser) {
+        if (authUser == null) {
+            return null;
+        }
+        return authUser.userId();
     }
 }

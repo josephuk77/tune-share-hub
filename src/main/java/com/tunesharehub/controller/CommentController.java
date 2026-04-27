@@ -49,12 +49,12 @@ public class CommentController {
 
     @GetMapping("/playlists/{playlistId}/comments")
     public List<CommentResponse> getComments(
-            @CurrentUser AuthUser authUser,
+            @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId,
             @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
-        return commentService.getComments(authUser.userId(), playlistId, page, size);
+        return commentService.getComments(getUserId(authUser), playlistId, page, size);
     }
 
     @PutMapping("/comments/{commentId}")
@@ -73,5 +73,12 @@ public class CommentController {
             @PathVariable Long commentId
     ) {
         commentService.deleteComment(authUser.userId(), commentId);
+    }
+
+    private Long getUserId(AuthUser authUser) {
+        if (authUser == null) {
+            return null;
+        }
+        return authUser.userId();
     }
 }
