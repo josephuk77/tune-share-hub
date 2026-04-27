@@ -8,6 +8,7 @@ import com.tunesharehub.exception.CommentNotFoundException;
 import com.tunesharehub.exception.ForbiddenException;
 import com.tunesharehub.mapper.CommentMapper;
 import com.tunesharehub.mapper.PlaylistMapper;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getComments(Long userId, Long playlistId, int page, int size) {
-        playlistService.getPlaylist(userId, playlistId);
+        playlistService.validateReadable(userId, playlistId);
         int offset = page * size;
         return commentMapper.findByPlaylistId(playlistId, offset, size)
                 .stream()
@@ -64,20 +65,25 @@ public class CommentService {
             throw new CommentNotFoundException();
         }
 
-        return toResponse(getExistingComment(commentId));
+        LocalDateTime updatedAt = commentMapper.findUpdatedAt(commentId);
+        comment.setUpdatedAt(updatedAt);
+        return toResponse(comment);
     }
 
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
-        Comment comment = getExistingCommentForUpdate(commentId);
-        validateOwner(userId, comment);
+        Comment comment = getExistingComment(commentId);
+        playlistService.validateReadableForUpdate(userId, comment.getPlaylistId());
+
+        Comment lockedComment = getExistingCommentForUpdate(commentId);
+        validateOwner(userId, lockedComment);
 
         int deletedCount = commentMapper.softDeleteOwned(commentId, userId);
         if (deletedCount != 1) {
             throw new CommentNotFoundException();
         }
 
-        playlistMapper.decreaseCommentCount(comment.getPlaylistId());
+        playlistMapper.decreaseCommentCount(lockedComment.getPlaylistId());
     }
 
     private Comment getExistingComment(Long commentId) {

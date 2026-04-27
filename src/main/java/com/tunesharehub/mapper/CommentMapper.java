@@ -1,6 +1,7 @@
 package com.tunesharehub.mapper;
 
 import com.tunesharehub.entity.Comment;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,6 +22,8 @@ public interface CommentMapper {
     );
 
     int updateOwned(Comment comment);
+
+    LocalDateTime findUpdatedAt(@Param("commentId") Long commentId);
 
     int softDeleteOwned(
             @Param("commentId") Long commentId,
