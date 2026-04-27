@@ -4,6 +4,7 @@ import com.tunesharehub.dto.PlaylistCreateRequest;
 import com.tunesharehub.dto.PlaylistResponse;
 import com.tunesharehub.dto.PlaylistUpdateRequest;
 import com.tunesharehub.entity.Playlist;
+import com.tunesharehub.exception.BusinessException;
 import com.tunesharehub.exception.ForbiddenException;
 import com.tunesharehub.exception.PlaylistNotFoundException;
 import com.tunesharehub.mapper.PlaylistMapper;
@@ -16,6 +17,12 @@ public class PlaylistService {
 
     private static final String PUBLIC_YN_TRUE = "Y";
     private static final String PUBLIC_YN_FALSE = "N";
+    private static final String SEARCH_TYPE_TITLE = "title";
+    private static final String SEARCH_TYPE_AUTHOR = "author";
+    private static final String SORT_LATEST = "latest";
+    private static final String SORT_VIEW = "view";
+    private static final String SORT_LIKE = "like";
+    private static final String SORT_COMMENT = "comment";
 
     private final PlaylistMapper playlistMapper;
 
@@ -47,6 +54,31 @@ public class PlaylistService {
     public List<PlaylistResponse> getMyPlaylists(Long userId, int page, int size) {
         int offset = page * size;
         return playlistMapper.findByUserId(userId, offset, size)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PlaylistResponse> getPublicPlaylists(
+            String keyword,
+            String searchType,
+            String sort,
+            int page,
+            int size
+    ) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+        String normalizedSearchType = normalizeSearchType(searchType);
+        String normalizedSort = normalizeSort(sort);
+        int offset = page * size;
+
+        return playlistMapper.findPublicPlaylists(
+                        normalizedKeyword,
+                        normalizedSearchType,
+                        normalizedSort,
+                        offset,
+                        size
+                )
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -163,5 +195,32 @@ public class PlaylistService {
             return PUBLIC_YN_TRUE;
         }
         return PUBLIC_YN_FALSE;
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null) {
+            return "";
+        }
+        return keyword.trim();
+    }
+
+    private String normalizeSearchType(String searchType) {
+        if (SEARCH_TYPE_AUTHOR.equals(searchType)) {
+            return SEARCH_TYPE_AUTHOR;
+        }
+        if (searchType == null || searchType.isBlank() || SEARCH_TYPE_TITLE.equals(searchType)) {
+            return SEARCH_TYPE_TITLE;
+        }
+        throw new BusinessException("INVALID_SEARCH_TYPE", "검색 타입이 올바르지 않습니다.");
+    }
+
+    private String normalizeSort(String sort) {
+        if (sort == null || sort.isBlank() || SORT_LATEST.equals(sort)) {
+            return SORT_LATEST;
+        }
+        if (SORT_VIEW.equals(sort) || SORT_LIKE.equals(sort) || SORT_COMMENT.equals(sort)) {
+            return sort;
+        }
+        throw new BusinessException("INVALID_SORT", "정렬 값이 올바르지 않습니다.");
     }
 }

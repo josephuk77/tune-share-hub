@@ -107,6 +107,53 @@
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
+    <select id="findPublicPlaylists" resultType="com.tunesharehub.entity.Playlist">
+        SELECT
+            P.PLAYLIST_ID,
+            P.USER_ID,
+            U.NICKNAME AS USER_NICKNAME,
+            P.TITLE,
+            P.DESCRIPTION,
+            P.COVER_IMAGE_URL,
+            P.PUBLIC_YN,
+            P.VIEW_COUNT,
+            P.LIKE_COUNT,
+            P.COMMENT_COUNT,
+            P.CREATED_AT,
+            P.UPDATED_AT,
+            P.DELETED_AT
+        FROM PLAYLISTS P
+        JOIN USERS U ON U.USER_ID = P.USER_ID
+        WHERE P.PUBLIC_YN = 'Y'
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        <if test="keyword != null and keyword != ''">
+            <choose>
+                <when test="searchType == 'author'">
+                    AND U.NICKNAME LIKE '%' || #{keyword} || '%'
+                </when>
+                <otherwise>
+                    AND P.TITLE LIKE '%' || #{keyword} || '%'
+                </otherwise>
+            </choose>
+        </if>
+        <choose>
+            <when test="sort == 'view'">
+                ORDER BY P.VIEW_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <when test="sort == 'like'">
+                ORDER BY P.LIKE_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <when test="sort == 'comment'">
+                ORDER BY P.COMMENT_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <otherwise>
+                ORDER BY P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </otherwise>
+        </choose>
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
     <update id="updateOwned" parameterType="com.tunesharehub.entity.Playlist">
         UPDATE PLAYLISTS
         SET
