@@ -22,6 +22,14 @@ public interface PlaylistMapper {
             @Param("size") int size
     );
 
+    List<Playlist> findPublicPlaylists(
+            @Param("keyword") String keyword,
+            @Param("searchType") String searchType,
+            @Param("sort") String sort,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
     int updateOwned(Playlist playlist);
 
     int softDeleteOwned(
