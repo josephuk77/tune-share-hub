@@ -12,6 +12,8 @@ public interface PlaylistMapper {
 
     Playlist findById(@Param("playlistId") Long playlistId);
 
+    Playlist findByIdForUpdate(@Param("playlistId") Long playlistId);
+
     List<Playlist> findByUserId(
             @Param("userId") Long userId,
             @Param("offset") int offset,

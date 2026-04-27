@@ -43,6 +43,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
     }
 
+    @ExceptionHandler(PlaylistTrackNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePlaylistTrackNotFound(PlaylistTrackNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
+    }
+
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

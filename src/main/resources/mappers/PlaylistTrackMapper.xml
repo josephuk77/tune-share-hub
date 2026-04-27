@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tunesharehub.mapper.PlaylistTrackMapper">
+
+    <insert id="insert" parameterType="com.tunesharehub.entity.PlaylistTrack">
+        <selectKey keyProperty="playlistTrackId" resultType="long" order="BEFORE">
+            SELECT SEQ_PLAYLIST_TRACKS.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PLAYLIST_TRACKS (
+            PLAYLIST_TRACK_ID,
+            PLAYLIST_ID,
+            SPOTIFY_TRACK_ID,
+            TITLE,
+            ARTIST_NAME,
+            ALBUM_NAME,
+            ALBUM_IMAGE_URL,
+            SPOTIFY_URL,
+            PREVIEW_URL,
+            DURATION_MS,
+            POSITION_NO
+        ) VALUES (
+            #{playlistTrackId},
+            #{playlistId},
+            #{spotifyTrackId},
+            #{title},
+            #{artistName},
+            #{albumName, jdbcType=VARCHAR},
+            #{albumImageUrl, jdbcType=VARCHAR},
+            #{spotifyUrl},
+            #{previewUrl, jdbcType=VARCHAR},
+            #{durationMs, jdbcType=NUMERIC},
+            (
+                SELECT NVL(MAX(POSITION_NO), 0) + 1
+                FROM PLAYLIST_TRACKS
+                WHERE PLAYLIST_ID = #{playlistId}
+                  AND DELETED_AT IS NULL
+            )
+        )
+    </insert>
+
+    <select id="findById" resultType="com.tunesharehub.entity.PlaylistTrack">
+        SELECT
+            PLAYLIST_TRACK_ID,
+            PLAYLIST_ID,
+            SPOTIFY_TRACK_ID,
+            TITLE,
+            ARTIST_NAME,
+            ALBUM_NAME,
+            ALBUM_IMAGE_URL,
+            SPOTIFY_URL,
+            PREVIEW_URL,
+            DURATION_MS,
+            POSITION_NO,
+            CREATED_AT,
+            DELETED_AT
+        FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND PLAYLIST_TRACK_ID = #{playlistTrackId}
+          AND DELETED_AT IS NULL
+    </select>
+
+    <select id="findByPlaylistId" resultType="com.tunesharehub.entity.PlaylistTrack">
+        SELECT
+            PLAYLIST_TRACK_ID,
+            PLAYLIST_ID,
+            SPOTIFY_TRACK_ID,
+            TITLE,
+            ARTIST_NAME,
+            ALBUM_NAME,
+            ALBUM_IMAGE_URL,
+            SPOTIFY_URL,
+            PREVIEW_URL,
+            DURATION_MS,
+            POSITION_NO,
+            CREATED_AT,
+            DELETED_AT
+        FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+        ORDER BY POSITION_NO ASC, PLAYLIST_TRACK_ID ASC
+    </select>
+
+    <update id="softDelete">
+        UPDATE PLAYLIST_TRACKS
+        SET DELETED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND PLAYLIST_TRACK_ID = #{playlistTrackId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <select id="countActiveByIds" resultType="int">
+        SELECT COUNT(*)
+        FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+          AND PLAYLIST_TRACK_ID IN
+          <foreach collection="playlistTrackIds" item="playlistTrackId" open="(" separator="," close=")">
+              #{playlistTrackId}
+          </foreach>
+    </select>
+
+    <select id="countActiveByPlaylistId" resultType="int">
+        SELECT COUNT(*)
+        FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </select>
+
+    <update id="moveActiveTracksToTemporaryPositions">
+        UPDATE PLAYLIST_TRACKS
+        SET POSITION_NO = -PLAYLIST_TRACK_ID
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="updatePositions">
+        UPDATE PLAYLIST_TRACKS
+        SET POSITION_NO = CASE PLAYLIST_TRACK_ID
+            <foreach collection="playlistTrackIds" item="playlistTrackId" index="positionIndex">
+                WHEN #{playlistTrackId} THEN #{positionIndex} + 1
+            </foreach>
+        END
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+          AND PLAYLIST_TRACK_ID IN
+          <foreach collection="playlistTrackIds" item="playlistTrackId" open="(" separator="," close=")">
+              #{playlistTrackId}
+          </foreach>
+    </update>
+
+</mapper>
