@@ -3,6 +3,7 @@ package com.tunesharehub.service;
 import com.tunesharehub.dto.CommentCreateRequest;
 import com.tunesharehub.dto.CommentResponse;
 import com.tunesharehub.dto.CommentUpdateRequest;
+import com.tunesharehub.dto.MyCommentResponse;
 import com.tunesharehub.entity.Comment;
 import com.tunesharehub.exception.CommentNotFoundException;
 import com.tunesharehub.exception.ForbiddenException;
@@ -51,6 +52,15 @@ public class CommentService {
         return commentMapper.findByPlaylistId(playlistId, offset, size)
                 .stream()
                 .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyCommentResponse> getMyComments(Long userId, int page, int size) {
+        int offset = page * size;
+        return commentMapper.findByUserId(userId, offset, size)
+                .stream()
+                .map(this::toMyCommentResponse)
                 .toList();
     }
 
@@ -114,6 +124,17 @@ public class CommentService {
                 comment.getPlaylistId(),
                 comment.getUserId(),
                 comment.getUserNickname(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
+        );
+    }
+
+    private MyCommentResponse toMyCommentResponse(Comment comment) {
+        return new MyCommentResponse(
+                comment.getCommentId(),
+                comment.getPlaylistId(),
+                comment.getPlaylistTitle(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()

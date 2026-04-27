@@ -8,6 +8,7 @@
     <sql id="commentColumns">
         C.COMMENT_ID,
         C.PLAYLIST_ID,
+        P.TITLE AS PLAYLIST_TITLE,
         C.USER_ID,
         COALESCE(U.NICKNAME, '탈퇴한 사용자') AS USER_NICKNAME,
         C.CONTENT,
@@ -69,6 +70,18 @@
           AND C.DELETED_AT IS NULL
           AND P.DELETED_AT IS NULL
         ORDER BY C.CREATED_AT ASC, C.COMMENT_ID ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findByUserId" resultType="com.tunesharehub.entity.Comment">
+        SELECT
+        <include refid="commentColumns"/>
+        <include refid="commentJoins"/>
+        WHERE C.USER_ID = #{userId}
+          AND C.DELETED_AT IS NULL
+          AND P.DELETED_AT IS NULL
+          AND (P.PUBLIC_YN = 'Y' OR P.USER_ID = #{userId})
+        ORDER BY C.CREATED_AT DESC, C.COMMENT_ID DESC
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 

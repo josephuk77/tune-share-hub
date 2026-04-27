@@ -5,6 +5,7 @@ import com.tunesharehub.auth.CurrentUser;
 import com.tunesharehub.dto.CommentCreateRequest;
 import com.tunesharehub.dto.CommentResponse;
 import com.tunesharehub.dto.CommentUpdateRequest;
+import com.tunesharehub.dto.MyCommentResponse;
 import com.tunesharehub.service.CommentService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -55,6 +56,15 @@ public class CommentController {
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
         return commentService.getComments(AuthUser.userIdOrNull(authUser), playlistId, page, size);
+    }
+
+    @GetMapping("/me/comments")
+    public List<MyCommentResponse> getMyComments(
+            @CurrentUser AuthUser authUser,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
+            @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
+    ) {
+        return commentService.getMyComments(authUser.userId(), page, size);
     }
 
     @PutMapping("/comments/{commentId}")

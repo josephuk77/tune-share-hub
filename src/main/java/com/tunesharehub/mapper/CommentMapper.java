@@ -21,6 +21,12 @@ public interface CommentMapper {
             @Param("size") int size
     );
 
+    List<Comment> findByUserId(
+            @Param("userId") Long userId,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
     int updateOwned(Comment comment);
 
     LocalDateTime findUpdatedAt(@Param("commentId") Long commentId);

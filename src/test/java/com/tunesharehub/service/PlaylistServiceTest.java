@@ -50,6 +50,18 @@ class PlaylistServiceTest {
     }
 
     @Test
+    void getLikedPlaylistsReturnsUserLikedPlaylists() {
+        Playlist playlist = publicPlaylist();
+        when(playlistMapper.findLikedByUserId(1L, 20, 10)).thenReturn(List.of(playlist));
+
+        List<PlaylistResponse> responses = playlistService.getLikedPlaylists(1L, 2, 10);
+
+        verify(playlistMapper).findLikedByUserId(1L, 20, 10);
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).playlistId()).isEqualTo(10L);
+    }
+
+    @Test
     void getPublicPlaylistsRejectsInvalidSearchType() {
         assertThatThrownBy(() -> playlistService.getPublicPlaylists("", "description", "latest", 0, 20))
                 .isInstanceOf(BusinessException.class)

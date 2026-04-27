@@ -6,6 +6,7 @@ public class Comment {
 
     private Long commentId;
     private Long playlistId;
+    private String playlistTitle;
     private Long userId;
     private String userNickname;
     private String content;
@@ -27,6 +28,14 @@ public class Comment {
 
     public void setPlaylistId(Long playlistId) {
         this.playlistId = playlistId;
+    }
+
+    public String getPlaylistTitle() {
+        return playlistTitle;
+    }
+
+    public void setPlaylistTitle(String playlistTitle) {
+        this.playlistTitle = playlistTitle;
     }
 
     public Long getUserId() {
