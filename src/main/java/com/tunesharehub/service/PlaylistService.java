@@ -108,6 +108,21 @@ public class PlaylistService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public void validateOwner(Long userId, Long playlistId) {
+        Playlist playlist = getExistingPlaylist(playlistId);
+        validateOwner(userId, playlist);
+    }
+
+    @Transactional
+    public void validateOwnerForUpdate(Long userId, Long playlistId) {
+        Playlist playlist = playlistMapper.findByIdForUpdate(playlistId);
+        if (playlist == null) {
+            throw new PlaylistNotFoundException();
+        }
+        validateOwner(userId, playlist);
+    }
+
     private PlaylistResponse toResponse(Playlist playlist) {
         return new PlaylistResponse(
                 playlist.getPlaylistId(),

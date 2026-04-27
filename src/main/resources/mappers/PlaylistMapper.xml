@@ -48,6 +48,29 @@
           AND U.DELETED_AT IS NULL
     </select>
 
+    <select id="findByIdForUpdate" resultType="com.tunesharehub.entity.Playlist">
+        SELECT
+            P.PLAYLIST_ID,
+            P.USER_ID,
+            U.NICKNAME AS USER_NICKNAME,
+            P.TITLE,
+            P.DESCRIPTION,
+            P.COVER_IMAGE_URL,
+            P.PUBLIC_YN,
+            P.VIEW_COUNT,
+            P.LIKE_COUNT,
+            P.COMMENT_COUNT,
+            P.CREATED_AT,
+            P.UPDATED_AT,
+            P.DELETED_AT
+        FROM PLAYLISTS P
+        JOIN USERS U ON U.USER_ID = P.USER_ID
+        WHERE P.PLAYLIST_ID = #{playlistId}
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        FOR UPDATE
+    </select>
+
     <select id="findByUserId" resultType="com.tunesharehub.entity.Playlist">
         SELECT
             P.PLAYLIST_ID,
