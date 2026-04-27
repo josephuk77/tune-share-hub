@@ -28,6 +28,7 @@ dependencies {
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11:23.26.1.0.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

@@ -14,7 +14,7 @@ mybatis:
     map-underscore-to-camel-case: true
 
 jwt:
-  secret: ${JWT_SECRET:change-me-change-me-change-me-change-me}
+  secret: ${JWT_SECRET:local-dev-secret-9f4c8e2a7b6d41c0a35e92f18d7b64aa}
   access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:60}
   refresh-token-expiration-days: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:14}
 
