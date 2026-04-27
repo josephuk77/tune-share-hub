@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tunesharehub.mapper.PlaylistLikeMapper">
+
+    <insert id="insert" parameterType="com.tunesharehub.entity.PlaylistLike">
+        <selectKey keyProperty="likeId" resultType="long" order="BEFORE">
+            SELECT SEQ_PLAYLIST_LIKES.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PLAYLIST_LIKES (
+            LIKE_ID,
+            PLAYLIST_ID,
+            USER_ID
+        ) VALUES (
+            #{likeId},
+            #{playlistId},
+            #{userId}
+        )
+    </insert>
+
+    <select id="findByPlaylistIdAndUserId" resultType="com.tunesharehub.entity.PlaylistLike">
+        SELECT
+            LIKE_ID,
+            PLAYLIST_ID,
+            USER_ID,
+            CREATED_AT,
+            DELETED_AT
+        FROM PLAYLIST_LIKES
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+    </select>
+
+    <update id="recover">
+        UPDATE PLAYLIST_LIKES
+        SET DELETED_AT = NULL
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+          AND DELETED_AT IS NOT NULL
+    </update>
+
+    <update id="softDelete">
+        UPDATE PLAYLIST_LIKES
+        SET DELETED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+          AND DELETED_AT IS NULL
+    </update>
+
+</mapper>

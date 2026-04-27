@@ -38,4 +38,10 @@ public interface PlaylistMapper {
     void increaseCommentCount(@Param("playlistId") Long playlistId);
 
     void decreaseCommentCount(@Param("playlistId") Long playlistId);
+
+    void increaseLikeCount(@Param("playlistId") Long playlistId);
+
+    void decreaseLikeCount(@Param("playlistId") Long playlistId);
+
+    Long findLikeCountById(@Param("playlistId") Long playlistId);
 }
