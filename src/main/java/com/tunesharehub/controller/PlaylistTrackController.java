@@ -41,10 +41,10 @@ public class PlaylistTrackController {
 
     @GetMapping
     public List<PlaylistTrackResponse> getTracks(
-            @CurrentUser AuthUser authUser,
+            @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId
     ) {
-        return playlistTrackService.getTracks(authUser.userId(), playlistId);
+        return playlistTrackService.getTracks(AuthUser.userIdOrNull(authUser), playlistId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

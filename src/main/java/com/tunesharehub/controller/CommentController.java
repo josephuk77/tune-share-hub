@@ -49,12 +49,12 @@ public class CommentController {
 
     @GetMapping("/playlists/{playlistId}/comments")
     public List<CommentResponse> getComments(
-            @CurrentUser AuthUser authUser,
+            @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId,
-            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
-        return commentService.getComments(authUser.userId(), playlistId, page, size);
+        return commentService.getComments(AuthUser.userIdOrNull(authUser), playlistId, page, size);
     }
 
     @PutMapping("/comments/{commentId}")

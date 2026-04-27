@@ -48,10 +48,10 @@ public class PlaylistController {
 
     @GetMapping("/playlists/{playlistId}")
     public PlaylistResponse getPlaylist(
-            @CurrentUser AuthUser authUser,
+            @CurrentUser(required = false) AuthUser authUser,
             @PathVariable Long playlistId
     ) {
-        return playlistService.getPlaylist(authUser.userId(), playlistId);
+        return playlistService.getPlaylistDetail(AuthUser.userIdOrNull(authUser), playlistId);
     }
 
     @GetMapping("/playlists")

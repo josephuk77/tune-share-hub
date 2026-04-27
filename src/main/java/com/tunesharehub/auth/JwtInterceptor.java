@@ -2,6 +2,7 @@ package com.tunesharehub.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -14,7 +15,10 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String PUBLIC_PLAYLISTS_PATH = "/api/playlists";
+    private static final Pattern PUBLIC_PLAYLIST_LIST_PATTERN = Pattern.compile("^/api/playlists/?$");
+    private static final Pattern PUBLIC_PLAYLIST_DETAIL_PATTERN = Pattern.compile("^/api/playlists/[1-9]\\d*/?$");
+    private static final Pattern PUBLIC_PLAYLIST_CHILD_PATTERN =
+            Pattern.compile("^/api/playlists/[1-9]\\d*/(tracks|comments)/?$");
 
     private final JwtProvider jwtProvider;
 
@@ -27,11 +31,11 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
-        if (isPublicEndpoint(request)) {
-            return true;
-        }
 
         String authorization = request.getHeader(AUTHORIZATION_HEADER);
+        if (authorization == null && isPublicEndpoint(request)) {
+            return true;
+        }
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
             throw new UnauthorizedException("인증 토큰이 필요합니다.");
         }
@@ -42,8 +46,14 @@ public class JwtInterceptor implements HandlerInterceptor {
     }
 
     private boolean isPublicEndpoint(HttpServletRequest request) {
-        return HttpMethod.GET.matches(request.getMethod())
-                && PUBLIC_PLAYLISTS_PATH.equals(getRequestPath(request));
+        if (!HttpMethod.GET.matches(request.getMethod())) {
+            return false;
+        }
+
+        String requestPath = getRequestPath(request);
+        return PUBLIC_PLAYLIST_LIST_PATTERN.matcher(requestPath).matches()
+                || PUBLIC_PLAYLIST_DETAIL_PATTERN.matcher(requestPath).matches()
+                || PUBLIC_PLAYLIST_CHILD_PATTERN.matcher(requestPath).matches();
     }
 
     private String getRequestPath(HttpServletRequest request) {
@@ -54,4 +64,5 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
         return requestUri.substring(contextPath.length());
     }
+
 }

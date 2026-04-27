@@ -232,6 +232,14 @@
           AND DELETED_AT IS NULL
     </update>
 
+    <update id="increaseViewCount">
+        UPDATE PLAYLISTS
+        SET VIEW_COUNT = VIEW_COUNT + 1
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND PUBLIC_YN = 'Y'
+          AND DELETED_AT IS NULL
+    </update>
+
     <select id="findLikeCountById" resultType="long">
         SELECT LIKE_COUNT
         FROM PLAYLISTS

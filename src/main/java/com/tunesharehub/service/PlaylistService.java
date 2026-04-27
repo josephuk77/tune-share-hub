@@ -51,6 +51,20 @@ public class PlaylistService {
         return toResponse(playlist);
     }
 
+    @Transactional
+    public PlaylistResponse getPlaylistDetail(Long loginUserId, Long playlistId) {
+        Playlist playlist = getExistingPlaylist(playlistId);
+        validateReadable(loginUserId, playlist);
+        if (shouldIncreaseViewCount(loginUserId, playlist)) {
+            int updatedCount = playlistMapper.increaseViewCount(playlistId);
+            if (updatedCount == 1) {
+                long currentViewCount = playlist.getViewCount() != null ? playlist.getViewCount() : 0L;
+                playlist.setViewCount(currentViewCount + 1);
+            }
+        }
+        return toResponse(playlist);
+    }
+
     @Transactional(readOnly = true)
     public List<PlaylistResponse> getMyPlaylists(Long userId, int page, int size) {
         int offset = page * size;
@@ -203,6 +217,10 @@ public class PlaylistService {
             return "";
         }
         return keyword.trim();
+    }
+
+    private boolean shouldIncreaseViewCount(Long loginUserId, Playlist playlist) {
+        return PUBLIC_YN_TRUE.equals(playlist.getPublicYn()) && !playlist.getUserId().equals(loginUserId);
     }
 
     private String normalizeSearchType(String searchType) {
