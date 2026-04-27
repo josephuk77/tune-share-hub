@@ -48,6 +48,18 @@
           AND U.DELETED_AT IS NULL
     </select>
 
+    <select id="findAccessById" resultType="com.tunesharehub.entity.Playlist">
+        SELECT
+            P.PLAYLIST_ID,
+            P.USER_ID,
+            P.PUBLIC_YN
+        FROM PLAYLISTS P
+        JOIN USERS U ON U.USER_ID = P.USER_ID
+        WHERE P.PLAYLIST_ID = #{playlistId}
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+    </select>
+
     <select id="findByIdForUpdate" resultType="com.tunesharehub.entity.Playlist">
         SELECT
             P.PLAYLIST_ID,
@@ -137,6 +149,24 @@
     <update id="softDeleteLikesByPlaylistId">
         UPDATE PLAYLIST_LIKES
         SET DELETED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="increaseCommentCount">
+        UPDATE PLAYLISTS
+        SET
+            COMMENT_COUNT = COMMENT_COUNT + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="decreaseCommentCount">
+        UPDATE PLAYLISTS
+        SET
+            COMMENT_COUNT = GREATEST(COMMENT_COUNT - 1, 0),
+            UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </update>

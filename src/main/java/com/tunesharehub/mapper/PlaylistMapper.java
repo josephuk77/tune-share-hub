@@ -12,6 +12,8 @@ public interface PlaylistMapper {
 
     Playlist findById(@Param("playlistId") Long playlistId);
 
+    Playlist findAccessById(@Param("playlistId") Long playlistId);
+
     Playlist findByIdForUpdate(@Param("playlistId") Long playlistId);
 
     List<Playlist> findByUserId(
@@ -32,4 +34,8 @@ public interface PlaylistMapper {
     void softDeleteCommentsByPlaylistId(@Param("playlistId") Long playlistId);
 
     void softDeleteLikesByPlaylistId(@Param("playlistId") Long playlistId);
+
+    void increaseCommentCount(@Param("playlistId") Long playlistId);
+
+    void decreaseCommentCount(@Param("playlistId") Long playlistId);
 }

@@ -114,6 +114,15 @@ public class PlaylistService {
         validateOwner(userId, playlist);
     }
 
+    @Transactional(readOnly = true)
+    public void validateReadable(Long userId, Long playlistId) {
+        Playlist playlist = playlistMapper.findAccessById(playlistId);
+        if (playlist == null) {
+            throw new PlaylistNotFoundException();
+        }
+        validateReadable(userId, playlist);
+    }
+
     @Transactional
     public void validateOwnerForUpdate(Long userId, Long playlistId) {
         Playlist playlist = playlistMapper.findByIdForUpdate(playlistId);
@@ -121,6 +130,15 @@ public class PlaylistService {
             throw new PlaylistNotFoundException();
         }
         validateOwner(userId, playlist);
+    }
+
+    @Transactional
+    public void validateReadableForUpdate(Long userId, Long playlistId) {
+        Playlist playlist = playlistMapper.findByIdForUpdate(playlistId);
+        if (playlist == null) {
+            throw new PlaylistNotFoundException();
+        }
+        validateReadable(userId, playlist);
     }
 
     private PlaylistResponse toResponse(Playlist playlist) {

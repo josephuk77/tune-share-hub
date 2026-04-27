@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
     }
 
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCommentNotFound(CommentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getCode(), exception.getMessage()));
+    }
+
     @ExceptionHandler(SpotifyApiException.class)
     public ResponseEntity<ErrorResponse> handleSpotifyApiException(SpotifyApiException exception) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
