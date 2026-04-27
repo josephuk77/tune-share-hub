@@ -43,7 +43,7 @@ class PlaylistServiceTest {
         when(playlistMapper.findPublicPlaylists("alice", "author", "like", 40, 20))
                 .thenReturn(List.of());
 
-        playlistService.getPublicPlaylists(" alice ", "author", "like", 2, 20);
+        playlistService.getPublicPlaylists(" alice ", " Author ", " LIKE ", 2, 20);
 
         verify(playlistMapper).findPublicPlaylists("alice", "author", "like", 40, 20);
     }

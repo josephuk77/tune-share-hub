@@ -59,7 +59,7 @@ public class PlaylistController {
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "title") String searchType,
             @RequestParam(defaultValue = "latest") String sort,
-            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
         return playlistService.getPublicPlaylists(keyword, searchType, sort, page, size);

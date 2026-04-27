@@ -9,6 +9,7 @@ import com.tunesharehub.exception.ForbiddenException;
 import com.tunesharehub.exception.PlaylistNotFoundException;
 import com.tunesharehub.mapper.PlaylistMapper;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -205,21 +206,32 @@ public class PlaylistService {
     }
 
     private String normalizeSearchType(String searchType) {
-        if (SEARCH_TYPE_AUTHOR.equals(searchType)) {
+        if (searchType == null || searchType.isBlank()) {
+            return SEARCH_TYPE_TITLE;
+        }
+
+        String normalizedSearchType = searchType.trim().toLowerCase(Locale.ROOT);
+        if (SEARCH_TYPE_AUTHOR.equals(normalizedSearchType)) {
             return SEARCH_TYPE_AUTHOR;
         }
-        if (searchType == null || searchType.isBlank() || SEARCH_TYPE_TITLE.equals(searchType)) {
+        if (SEARCH_TYPE_TITLE.equals(normalizedSearchType)) {
             return SEARCH_TYPE_TITLE;
         }
         throw new BusinessException("INVALID_SEARCH_TYPE", "검색 타입이 올바르지 않습니다.");
     }
 
     private String normalizeSort(String sort) {
-        if (sort == null || sort.isBlank() || SORT_LATEST.equals(sort)) {
+        if (sort == null || sort.isBlank()) {
             return SORT_LATEST;
         }
-        if (SORT_VIEW.equals(sort) || SORT_LIKE.equals(sort) || SORT_COMMENT.equals(sort)) {
-            return sort;
+
+        String normalizedSort = sort.trim().toLowerCase(Locale.ROOT);
+        if (SORT_LATEST.equals(normalizedSort)) {
+            return SORT_LATEST;
+        }
+        if (SORT_VIEW.equals(normalizedSort) || SORT_LIKE.equals(normalizedSort)
+                || SORT_COMMENT.equals(normalizedSort)) {
+            return normalizedSort;
         }
         throw new BusinessException("INVALID_SORT", "정렬 값이 올바르지 않습니다.");
     }
