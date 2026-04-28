@@ -36,6 +36,11 @@ public interface PlaylistMapper {
             @Param("size") int size
     );
 
+    List<Playlist> findSimilarByTrackOverlap(
+            @Param("playlistId") Long playlistId,
+            @Param("size") int size
+    );
+
     int increaseCopyCount(@Param("playlistId") Long playlistId);
 
     int updateOwned(Playlist playlist);

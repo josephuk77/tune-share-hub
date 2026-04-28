@@ -18,7 +18,7 @@ public class JwtInterceptor implements HandlerInterceptor {
     private static final Pattern PUBLIC_PLAYLIST_LIST_PATTERN = Pattern.compile("^/api/playlists/?$");
     private static final Pattern PUBLIC_PLAYLIST_DETAIL_PATTERN = Pattern.compile("^/api/playlists/[1-9]\\d*/?$");
     private static final Pattern PUBLIC_PLAYLIST_CHILD_PATTERN =
-            Pattern.compile("^/api/playlists/[1-9]\\d*/(tracks|comments)/?$");
+            Pattern.compile("^/api/playlists/[1-9]\\d*/(tracks|comments|similar)/?$");
 
     private final JwtProvider jwtProvider;
 

@@ -67,6 +67,22 @@ class PlaylistServiceTest {
     }
 
     @Test
+    void getSimilarPlaylistsValidatesReadablePlaylistAndReturnsSimilarPublicPlaylists() {
+        Playlist sourcePlaylist = publicPlaylist();
+        Playlist similarPlaylist = publicPlaylist();
+        similarPlaylist.setPlaylistId(20L);
+        when(playlistMapper.findAccessById(10L)).thenReturn(sourcePlaylist);
+        when(playlistMapper.findSimilarByTrackOverlap(10L, 10)).thenReturn(List.of(similarPlaylist));
+
+        List<PlaylistResponse> responses = playlistService.getSimilarPlaylists(null, 10L, 10);
+
+        verify(playlistMapper).findAccessById(10L);
+        verify(playlistMapper).findSimilarByTrackOverlap(10L, 10);
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).playlistId()).isEqualTo(20L);
+    }
+
+    @Test
     void copyPlaylistCreatesPrivateCopyAndCopiesTracks() {
         Playlist sourcePlaylist = publicPlaylist();
         sourcePlaylist.setUserNickname("alice");
