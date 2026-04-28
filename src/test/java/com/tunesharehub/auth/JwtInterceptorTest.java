@@ -103,6 +103,15 @@ class JwtInterceptorTest {
     }
 
     @Test
+    void sessionMeRequiresToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/session/me");
+
+        assertThatThrownBy(() -> jwtInterceptor.preHandle(request, response, handler))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("인증 토큰이 필요합니다.");
+    }
+
+    @Test
     void playlistCreateStillRequiresToken() {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/playlists");
 
