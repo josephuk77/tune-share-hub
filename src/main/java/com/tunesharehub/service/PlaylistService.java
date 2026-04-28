@@ -113,7 +113,7 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistResponse copyPlaylist(Long userId, Long sourcePlaylistId) {
-        Playlist sourcePlaylist = playlistMapper.findByIdForUpdate(sourcePlaylistId);
+        Playlist sourcePlaylist = playlistMapper.findById(sourcePlaylistId);
         if (sourcePlaylist == null) {
             throw new PlaylistNotFoundException();
         }
@@ -130,7 +130,10 @@ public class PlaylistService {
 
         playlistMapper.insert(copiedPlaylist);
         playlistTrackMapper.copyActiveTracks(sourcePlaylistId, copiedPlaylist.getPlaylistId());
-        playlistMapper.increaseCopyCount(sourcePlaylistId);
+        int updatedCount = playlistMapper.increaseCopyCount(sourcePlaylistId);
+        if (updatedCount != 1) {
+            throw new PlaylistNotFoundException();
+        }
 
         return getPlaylist(userId, copiedPlaylist.getPlaylistId());
     }

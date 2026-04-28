@@ -77,7 +77,7 @@ class PlaylistServiceTest {
         copiedPlaylist.setPublicYn("N");
         copiedPlaylist.setOriginPlaylistId(10L);
         copiedPlaylist.setOriginUserNickname("alice");
-        when(playlistMapper.findByIdForUpdate(10L)).thenReturn(sourcePlaylist);
+        when(playlistMapper.findById(10L)).thenReturn(sourcePlaylist);
         org.mockito.Mockito.doAnswer(invocation -> {
                     Playlist insertedPlaylist = invocation.getArgument(0);
                     insertedPlaylist.setPlaylistId(20L);
@@ -85,6 +85,7 @@ class PlaylistServiceTest {
                 })
                 .when(playlistMapper)
                 .insert(org.mockito.ArgumentMatchers.any(Playlist.class));
+        when(playlistMapper.increaseCopyCount(10L)).thenReturn(1);
         when(playlistMapper.findById(20L)).thenReturn(copiedPlaylist);
 
         PlaylistResponse response = playlistService.copyPlaylist(2L, 10L);
