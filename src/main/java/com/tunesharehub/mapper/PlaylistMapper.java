@@ -30,6 +30,12 @@ public interface PlaylistMapper {
             @Param("size") int size
     );
 
+    List<Playlist> findLikedByUserId(
+            @Param("userId") Long userId,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
     int updateOwned(Playlist playlist);
 
     int softDeleteOwned(

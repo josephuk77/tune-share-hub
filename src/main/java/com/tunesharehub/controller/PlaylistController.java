@@ -68,10 +68,19 @@ public class PlaylistController {
     @GetMapping("/me/playlists")
     public List<PlaylistResponse> getMyPlaylists(
             @CurrentUser AuthUser authUser,
-            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) int page,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
     ) {
         return playlistService.getMyPlaylists(authUser.userId(), page, size);
+    }
+
+    @GetMapping("/me/liked-playlists")
+    public List<PlaylistResponse> getLikedPlaylists(
+            @CurrentUser AuthUser authUser,
+            @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) @Max(10000) int page,
+            @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(100) int size
+    ) {
+        return playlistService.getLikedPlaylists(authUser.userId(), page, size);
     }
 
     @PutMapping("/playlists/{playlistId}")

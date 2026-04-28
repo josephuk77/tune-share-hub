@@ -72,6 +72,23 @@
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
+    <select id="findByUserId" resultType="com.tunesharehub.dto.MyCommentProjection">
+        SELECT
+            C.COMMENT_ID,
+            C.PLAYLIST_ID,
+            P.TITLE AS PLAYLIST_TITLE,
+            C.CONTENT,
+            C.CREATED_AT,
+            C.UPDATED_AT
+        <include refid="commentJoins"/>
+        WHERE C.USER_ID = #{userId}
+          AND C.DELETED_AT IS NULL
+          AND P.DELETED_AT IS NULL
+          AND (P.PUBLIC_YN = 'Y' OR P.USER_ID = #{userId})
+        ORDER BY C.CREATED_AT DESC, C.COMMENT_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
     <update id="updateOwned" parameterType="com.tunesharehub.entity.Comment">
         UPDATE COMMENTS
         SET

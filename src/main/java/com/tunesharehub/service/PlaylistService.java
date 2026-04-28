@@ -75,6 +75,15 @@ public class PlaylistService {
     }
 
     @Transactional(readOnly = true)
+    public List<PlaylistResponse> getLikedPlaylists(Long userId, int page, int size) {
+        int offset = page * size;
+        return playlistMapper.findLikedByUserId(userId, offset, size)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<PlaylistResponse> getPublicPlaylists(
             String keyword,
             String searchType,

@@ -1,5 +1,6 @@
 package com.tunesharehub.mapper;
 
+import com.tunesharehub.dto.MyCommentProjection;
 import com.tunesharehub.entity.Comment;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,12 @@ public interface CommentMapper {
 
     List<Comment> findByPlaylistId(
             @Param("playlistId") Long playlistId,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
+    List<MyCommentProjection> findByUserId(
+            @Param("userId") Long userId,
             @Param("offset") int offset,
             @Param("size") int size
     );
