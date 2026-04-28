@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { login as requestLogin, logout as requestLogout } from '../api/authApi.js'
+import {
+  login as requestLogin,
+  logout as requestLogout,
+  refresh as requestRefresh,
+} from '../api/authApi.js'
 import { getCurrentUser } from '../api/sessionApi.js'
 import { AuthContext } from './AuthContext.js'
 import {
@@ -14,17 +18,38 @@ export function AuthProvider({ children }) {
   const [isBootstrapping, setIsBootstrapping] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
+  const refreshSession = useCallback(async () => {
+    const refreshToken = getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('refresh token이 없습니다.')
+    }
+
+    const response = await requestRefresh(refreshToken)
+    saveTokens(response)
+    return response.user
+  }, [])
+
   useEffect(() => {
     let isMounted = true
 
     async function restoreSession() {
-      if (!getAccessToken()) {
+      if (!getAccessToken() && !getRefreshToken()) {
         setIsBootstrapping(false)
         return
       }
 
       try {
-        const currentUser = await getCurrentUser()
+        let currentUser
+        if (getAccessToken()) {
+          try {
+            currentUser = await getCurrentUser()
+          } catch {
+            currentUser = await refreshSession()
+          }
+        } else {
+          currentUser = await refreshSession()
+        }
+
         if (isMounted) {
           setUser(currentUser)
         }
@@ -45,7 +70,7 @@ export function AuthProvider({ children }) {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [refreshSession])
 
   const login = useCallback(async ({ email, password }) => {
     setErrorMessage('')
