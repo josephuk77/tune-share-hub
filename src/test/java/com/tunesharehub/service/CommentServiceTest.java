@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.tunesharehub.dto.MyCommentProjection;
 import com.tunesharehub.dto.MyCommentResponse;
-import com.tunesharehub.entity.Comment;
 import com.tunesharehub.mapper.CommentMapper;
 import com.tunesharehub.mapper.PlaylistMapper;
 import java.time.LocalDateTime;
@@ -33,7 +33,7 @@ class CommentServiceTest {
 
     @Test
     void getMyCommentsReturnsUserCommentsWithPlaylistContext() {
-        Comment comment = new Comment();
+        MyCommentProjection comment = new MyCommentProjection();
         comment.setCommentId(100L);
         comment.setPlaylistId(10L);
         comment.setPlaylistTitle("morning mix");

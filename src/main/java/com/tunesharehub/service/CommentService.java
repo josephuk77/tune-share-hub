@@ -3,6 +3,7 @@ package com.tunesharehub.service;
 import com.tunesharehub.dto.CommentCreateRequest;
 import com.tunesharehub.dto.CommentResponse;
 import com.tunesharehub.dto.CommentUpdateRequest;
+import com.tunesharehub.dto.MyCommentProjection;
 import com.tunesharehub.dto.MyCommentResponse;
 import com.tunesharehub.entity.Comment;
 import com.tunesharehub.exception.CommentNotFoundException;
@@ -130,7 +131,7 @@ public class CommentService {
         );
     }
 
-    private MyCommentResponse toMyCommentResponse(Comment comment) {
+    private MyCommentResponse toMyCommentResponse(MyCommentProjection comment) {
         return new MyCommentResponse(
                 comment.getCommentId(),
                 comment.getPlaylistId(),

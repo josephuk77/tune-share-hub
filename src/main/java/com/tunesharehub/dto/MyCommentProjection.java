@@ -1,17 +1,15 @@
-package com.tunesharehub.entity;
+package com.tunesharehub.dto;
 
 import java.time.LocalDateTime;
 
-public class Comment {
+public class MyCommentProjection {
 
     private Long commentId;
     private Long playlistId;
-    private Long userId;
-    private String userNickname;
+    private String playlistTitle;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
 
     public Long getCommentId() {
         return commentId;
@@ -29,20 +27,12 @@ public class Comment {
         this.playlistId = playlistId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getPlaylistTitle() {
+        return playlistTitle;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getUserNickname() {
-        return userNickname;
-    }
-
-    public void setUserNickname(String userNickname) {
-        this.userNickname = userNickname;
+    public void setPlaylistTitle(String playlistTitle) {
+        this.playlistTitle = playlistTitle;
     }
 
     public String getContent() {
@@ -67,13 +57,5 @@ public class Comment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
     }
 }
