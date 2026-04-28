@@ -65,6 +65,15 @@ public class AuthService {
         refreshTokenMapper.revokeActiveByTokenValue(refreshTokenValue);
     }
 
+    @Transactional(readOnly = true)
+    public UserSummaryResponse getCurrentUser(Long userId) {
+        User user = userMapper.findActiveById(userId);
+        if (user == null) {
+            throw new InvalidTokenException("유효하지 않은 access token입니다.");
+        }
+        return new UserSummaryResponse(user.getUserId(), user.getEmail(), user.getNickname(), user.getRole());
+    }
+
     private LoginResponse issueTokens(AuthUser authUser) {
         String accessToken = jwtProvider.createAccessToken(authUser);
         String refreshToken = jwtProvider.createRefreshToken(authUser);
