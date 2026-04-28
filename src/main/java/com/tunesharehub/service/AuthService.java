@@ -71,7 +71,7 @@ public class AuthService {
         if (user == null) {
             throw new InvalidTokenException("유효하지 않은 access token입니다.");
         }
-        return new UserSummaryResponse(user.getUserId(), user.getEmail(), user.getNickname(), user.getRole());
+        return toUserSummaryResponse(toAuthUser(user));
     }
 
     private LoginResponse issueTokens(AuthUser authUser) {
@@ -82,7 +82,7 @@ public class AuthService {
         return new LoginResponse(
                 accessToken,
                 refreshToken,
-                new UserSummaryResponse(authUser.userId(), authUser.email(), authUser.nickname(), authUser.role())
+                toUserSummaryResponse(authUser)
         );
     }
 
@@ -98,6 +98,10 @@ public class AuthService {
 
     private AuthUser toAuthUser(User user) {
         return new AuthUser(user.getUserId(), user.getEmail(), user.getNickname(), user.getRole());
+    }
+
+    private UserSummaryResponse toUserSummaryResponse(AuthUser authUser) {
+        return new UserSummaryResponse(authUser.userId(), authUser.email(), authUser.nickname(), authUser.role());
     }
 
     private boolean isPasswordMatched(String password, String passwordHash) {
