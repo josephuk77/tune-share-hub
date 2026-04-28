@@ -36,6 +36,8 @@ public interface PlaylistMapper {
             @Param("size") int size
     );
 
+    int increaseCopyCount(@Param("playlistId") Long playlistId);
+
     int updateOwned(Playlist playlist);
 
     int softDeleteOwned(

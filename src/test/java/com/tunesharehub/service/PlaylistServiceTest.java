@@ -10,9 +10,11 @@ import com.tunesharehub.dto.PlaylistResponse;
 import com.tunesharehub.entity.Playlist;
 import com.tunesharehub.exception.BusinessException;
 import com.tunesharehub.mapper.PlaylistMapper;
+import com.tunesharehub.mapper.PlaylistTrackMapper;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +24,9 @@ class PlaylistServiceTest {
 
     @Mock
     private PlaylistMapper playlistMapper;
+
+    @Mock
+    private PlaylistTrackMapper playlistTrackMapper;
 
     @InjectMocks
     private PlaylistService playlistService;
@@ -59,6 +64,45 @@ class PlaylistServiceTest {
         verify(playlistMapper).findLikedByUserId(1L, 20, 10);
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).playlistId()).isEqualTo(10L);
+    }
+
+    @Test
+    void copyPlaylistCreatesPrivateCopyAndCopiesTracks() {
+        Playlist sourcePlaylist = publicPlaylist();
+        sourcePlaylist.setUserNickname("alice");
+        Playlist copiedPlaylist = publicPlaylist();
+        copiedPlaylist.setPlaylistId(20L);
+        copiedPlaylist.setUserId(2L);
+        copiedPlaylist.setUserNickname("bob");
+        copiedPlaylist.setPublicYn("N");
+        copiedPlaylist.setOriginPlaylistId(10L);
+        copiedPlaylist.setOriginUserNickname("alice");
+        when(playlistMapper.findById(10L)).thenReturn(sourcePlaylist);
+        org.mockito.Mockito.doAnswer(invocation -> {
+                    Playlist insertedPlaylist = invocation.getArgument(0);
+                    insertedPlaylist.setPlaylistId(20L);
+                    return null;
+                })
+                .when(playlistMapper)
+                .insert(org.mockito.ArgumentMatchers.any(Playlist.class));
+        when(playlistMapper.increaseCopyCount(10L)).thenReturn(1);
+        when(playlistMapper.findById(20L)).thenReturn(copiedPlaylist);
+
+        PlaylistResponse response = playlistService.copyPlaylist(2L, 10L);
+
+        ArgumentCaptor<Playlist> playlistCaptor = ArgumentCaptor.forClass(Playlist.class);
+        verify(playlistMapper).insert(playlistCaptor.capture());
+        Playlist insertedPlaylist = playlistCaptor.getValue();
+        assertThat(insertedPlaylist.getUserId()).isEqualTo(2L);
+        assertThat(insertedPlaylist.getTitle()).isEqualTo("morning mix");
+        assertThat(insertedPlaylist.getPublicYn()).isEqualTo("N");
+        assertThat(insertedPlaylist.getOriginPlaylistId()).isEqualTo(10L);
+        assertThat(insertedPlaylist.getOriginUserNickname()).isEqualTo("alice");
+        verify(playlistTrackMapper).copyActiveTracks(10L, 20L);
+        verify(playlistMapper).increaseCopyCount(10L);
+        assertThat(response.playlistId()).isEqualTo(20L);
+        assertThat(response.originPlaylistId()).isEqualTo(10L);
+        assertThat(response.originUserNickname()).isEqualTo("alice");
     }
 
     @Test
@@ -133,6 +177,7 @@ class PlaylistServiceTest {
         playlist.setViewCount(0L);
         playlist.setLikeCount(0L);
         playlist.setCommentCount(0L);
+        playlist.setCopyCount(0L);
         return playlist;
     }
 }

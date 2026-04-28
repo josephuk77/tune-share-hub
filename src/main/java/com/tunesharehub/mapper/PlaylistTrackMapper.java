@@ -10,6 +10,11 @@ public interface PlaylistTrackMapper {
 
     void insert(PlaylistTrack playlistTrack);
 
+    int copyActiveTracks(
+            @Param("sourcePlaylistId") Long sourcePlaylistId,
+            @Param("targetPlaylistId") Long targetPlaylistId
+    );
+
     PlaylistTrack findById(
             @Param("playlistId") Long playlistId,
             @Param("playlistTrackId") Long playlistTrackId

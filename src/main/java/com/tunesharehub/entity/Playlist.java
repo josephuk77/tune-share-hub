@@ -11,9 +11,12 @@ public class Playlist {
     private String description;
     private String coverImageUrl;
     private String publicYn;
+    private Long originPlaylistId;
+    private String originUserNickname;
     private Long viewCount;
     private Long likeCount;
     private Long commentCount;
+    private Long copyCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -74,6 +77,22 @@ public class Playlist {
         this.publicYn = publicYn;
     }
 
+    public Long getOriginPlaylistId() {
+        return originPlaylistId;
+    }
+
+    public void setOriginPlaylistId(Long originPlaylistId) {
+        this.originPlaylistId = originPlaylistId;
+    }
+
+    public String getOriginUserNickname() {
+        return originUserNickname;
+    }
+
+    public void setOriginUserNickname(String originUserNickname) {
+        this.originUserNickname = originUserNickname;
+    }
+
     public Long getViewCount() {
         return viewCount;
     }
@@ -96,6 +115,14 @@ public class Playlist {
 
     public void setCommentCount(Long commentCount) {
         this.commentCount = commentCount;
+    }
+
+    public Long getCopyCount() {
+        return copyCount;
+    }
+
+    public void setCopyCount(Long copyCount) {
+        this.copyCount = copyCount;
     }
 
     public LocalDateTime getCreatedAt() {

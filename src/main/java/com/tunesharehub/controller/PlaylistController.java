@@ -83,6 +83,15 @@ public class PlaylistController {
         return playlistService.getLikedPlaylists(authUser.userId(), page, size);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/playlists/{playlistId}/copy")
+    public PlaylistResponse copyPlaylist(
+            @CurrentUser AuthUser authUser,
+            @PathVariable Long playlistId
+    ) {
+        return playlistService.copyPlaylist(authUser.userId(), playlistId);
+    }
+
     @PutMapping("/playlists/{playlistId}")
     public PlaylistResponse updatePlaylist(
             @CurrentUser AuthUser authUser,

@@ -5,6 +5,25 @@
 
 <mapper namespace="com.tunesharehub.mapper.PlaylistMapper">
 
+    <sql id="playlistColumns">
+        P.PLAYLIST_ID,
+        P.USER_ID,
+        U.NICKNAME AS USER_NICKNAME,
+        P.TITLE,
+        P.DESCRIPTION,
+        P.COVER_IMAGE_URL,
+        P.PUBLIC_YN,
+        P.ORIGIN_PLAYLIST_ID,
+        P.ORIGIN_USER_NICKNAME,
+        P.VIEW_COUNT,
+        P.LIKE_COUNT,
+        P.COMMENT_COUNT,
+        P.COPY_COUNT,
+        P.CREATED_AT,
+        P.UPDATED_AT,
+        P.DELETED_AT
+    </sql>
+
     <insert id="insert" parameterType="com.tunesharehub.entity.Playlist">
         <selectKey keyProperty="playlistId" resultType="long" order="BEFORE">
             SELECT SEQ_PLAYLISTS.NEXTVAL FROM DUAL
@@ -15,32 +34,24 @@
             TITLE,
             DESCRIPTION,
             COVER_IMAGE_URL,
-            PUBLIC_YN
+            PUBLIC_YN,
+            ORIGIN_PLAYLIST_ID,
+            ORIGIN_USER_NICKNAME
         ) VALUES (
             #{playlistId},
             #{userId},
             #{title},
             #{description, jdbcType=CLOB},
             #{coverImageUrl, jdbcType=VARCHAR},
-            #{publicYn}
+            #{publicYn},
+            #{originPlaylistId, jdbcType=NUMERIC},
+            #{originUserNickname, jdbcType=VARCHAR}
         )
     </insert>
 
     <select id="findById" resultType="com.tunesharehub.entity.Playlist">
         SELECT
-            P.PLAYLIST_ID,
-            P.USER_ID,
-            U.NICKNAME AS USER_NICKNAME,
-            P.TITLE,
-            P.DESCRIPTION,
-            P.COVER_IMAGE_URL,
-            P.PUBLIC_YN,
-            P.VIEW_COUNT,
-            P.LIKE_COUNT,
-            P.COMMENT_COUNT,
-            P.CREATED_AT,
-            P.UPDATED_AT,
-            P.DELETED_AT
+        <include refid="playlistColumns"/>
         FROM PLAYLISTS P
         JOIN USERS U ON U.USER_ID = P.USER_ID
         WHERE P.PLAYLIST_ID = #{playlistId}
@@ -62,19 +73,7 @@
 
     <select id="findByIdForUpdate" resultType="com.tunesharehub.entity.Playlist">
         SELECT
-            P.PLAYLIST_ID,
-            P.USER_ID,
-            U.NICKNAME AS USER_NICKNAME,
-            P.TITLE,
-            P.DESCRIPTION,
-            P.COVER_IMAGE_URL,
-            P.PUBLIC_YN,
-            P.VIEW_COUNT,
-            P.LIKE_COUNT,
-            P.COMMENT_COUNT,
-            P.CREATED_AT,
-            P.UPDATED_AT,
-            P.DELETED_AT
+        <include refid="playlistColumns"/>
         FROM PLAYLISTS P
         JOIN USERS U ON U.USER_ID = P.USER_ID
         WHERE P.PLAYLIST_ID = #{playlistId}
@@ -85,19 +84,7 @@
 
     <select id="findByUserId" resultType="com.tunesharehub.entity.Playlist">
         SELECT
-            P.PLAYLIST_ID,
-            P.USER_ID,
-            U.NICKNAME AS USER_NICKNAME,
-            P.TITLE,
-            P.DESCRIPTION,
-            P.COVER_IMAGE_URL,
-            P.PUBLIC_YN,
-            P.VIEW_COUNT,
-            P.LIKE_COUNT,
-            P.COMMENT_COUNT,
-            P.CREATED_AT,
-            P.UPDATED_AT,
-            P.DELETED_AT
+        <include refid="playlistColumns"/>
         FROM PLAYLISTS P
         JOIN USERS U ON U.USER_ID = P.USER_ID
         WHERE P.USER_ID = #{userId}
@@ -109,19 +96,7 @@
 
     <select id="findPublicPlaylists" resultType="com.tunesharehub.entity.Playlist">
         SELECT
-            P.PLAYLIST_ID,
-            P.USER_ID,
-            U.NICKNAME AS USER_NICKNAME,
-            P.TITLE,
-            P.DESCRIPTION,
-            P.COVER_IMAGE_URL,
-            P.PUBLIC_YN,
-            P.VIEW_COUNT,
-            P.LIKE_COUNT,
-            P.COMMENT_COUNT,
-            P.CREATED_AT,
-            P.UPDATED_AT,
-            P.DELETED_AT
+        <include refid="playlistColumns"/>
         FROM PLAYLISTS P
         JOIN USERS U ON U.USER_ID = P.USER_ID
         WHERE P.PUBLIC_YN = 'Y'
@@ -156,19 +131,7 @@
 
     <select id="findLikedByUserId" resultType="com.tunesharehub.entity.Playlist">
         SELECT
-            P.PLAYLIST_ID,
-            P.USER_ID,
-            U.NICKNAME AS USER_NICKNAME,
-            P.TITLE,
-            P.DESCRIPTION,
-            P.COVER_IMAGE_URL,
-            P.PUBLIC_YN,
-            P.VIEW_COUNT,
-            P.LIKE_COUNT,
-            P.COMMENT_COUNT,
-            P.CREATED_AT,
-            P.UPDATED_AT,
-            P.DELETED_AT
+        <include refid="playlistColumns"/>
         FROM PLAYLIST_LIKES PL
         JOIN PLAYLISTS P ON P.PLAYLIST_ID = PL.PLAYLIST_ID
         JOIN USERS U ON U.USER_ID = P.USER_ID
@@ -255,6 +218,13 @@
     <update id="decreaseLikeCount">
         UPDATE PLAYLISTS
         SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0)
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="increaseCopyCount">
+        UPDATE PLAYLISTS
+        SET COPY_COUNT = COPY_COUNT + 1
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </update>

@@ -41,6 +41,50 @@
         )
     </insert>
 
+    <insert id="copyActiveTracks">
+        INSERT INTO PLAYLIST_TRACKS (
+            PLAYLIST_TRACK_ID,
+            PLAYLIST_ID,
+            SPOTIFY_TRACK_ID,
+            TITLE,
+            ARTIST_NAME,
+            ALBUM_NAME,
+            ALBUM_IMAGE_URL,
+            SPOTIFY_URL,
+            PREVIEW_URL,
+            DURATION_MS,
+            POSITION_NO
+        )
+        SELECT
+            SEQ_PLAYLIST_TRACKS.NEXTVAL,
+            #{targetPlaylistId},
+            SOURCE_TRACKS.SPOTIFY_TRACK_ID,
+            SOURCE_TRACKS.TITLE,
+            SOURCE_TRACKS.ARTIST_NAME,
+            SOURCE_TRACKS.ALBUM_NAME,
+            SOURCE_TRACKS.ALBUM_IMAGE_URL,
+            SOURCE_TRACKS.SPOTIFY_URL,
+            SOURCE_TRACKS.PREVIEW_URL,
+            SOURCE_TRACKS.DURATION_MS,
+            SOURCE_TRACKS.POSITION_NO
+        FROM (
+            SELECT
+                SPOTIFY_TRACK_ID,
+                TITLE,
+                ARTIST_NAME,
+                ALBUM_NAME,
+                ALBUM_IMAGE_URL,
+                SPOTIFY_URL,
+                PREVIEW_URL,
+                DURATION_MS,
+                POSITION_NO
+            FROM PLAYLIST_TRACKS
+            WHERE PLAYLIST_ID = #{sourcePlaylistId}
+              AND DELETED_AT IS NULL
+            ORDER BY POSITION_NO ASC, PLAYLIST_TRACK_ID ASC
+        ) SOURCE_TRACKS
+    </insert>
+
     <select id="findById" resultType="com.tunesharehub.entity.PlaylistTrack">
         SELECT
             PLAYLIST_TRACK_ID,
