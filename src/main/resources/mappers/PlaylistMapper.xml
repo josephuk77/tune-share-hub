@@ -144,6 +144,34 @@
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
+    <select id="findSimilarByTrackOverlap" resultType="com.tunesharehub.entity.Playlist">
+        SELECT
+        <include refid="playlistColumns"/>
+        FROM PLAYLISTS P
+        JOIN USERS U ON U.USER_ID = P.USER_ID
+        JOIN (
+            SELECT
+                PT.PLAYLIST_ID,
+                COUNT(DISTINCT PT.SPOTIFY_TRACK_ID) AS SHARED_TRACK_COUNT
+            FROM PLAYLIST_TRACKS SOURCE_PT
+            JOIN PLAYLIST_TRACKS PT
+              ON PT.SPOTIFY_TRACK_ID = SOURCE_PT.SPOTIFY_TRACK_ID
+            JOIN PLAYLISTS P2 ON P2.PLAYLIST_ID = PT.PLAYLIST_ID
+            WHERE SOURCE_PT.PLAYLIST_ID = #{playlistId}
+              AND SOURCE_PT.DELETED_AT IS NULL
+              AND PT.DELETED_AT IS NULL
+              AND PT.PLAYLIST_ID != #{playlistId}
+              AND P2.PUBLIC_YN = 'Y'
+              AND P2.DELETED_AT IS NULL
+            GROUP BY PT.PLAYLIST_ID
+        ) SIMILAR ON SIMILAR.PLAYLIST_ID = P.PLAYLIST_ID
+        WHERE P.PUBLIC_YN = 'Y'
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        ORDER BY SIMILAR.SHARED_TRACK_COUNT DESC, P.LIKE_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+        FETCH FIRST #{size} ROWS ONLY
+    </select>
+
     <update id="updateOwned" parameterType="com.tunesharehub.entity.Playlist">
         UPDATE PLAYLISTS
         SET

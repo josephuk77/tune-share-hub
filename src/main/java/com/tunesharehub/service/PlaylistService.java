@@ -111,6 +111,15 @@ public class PlaylistService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<PlaylistResponse> getSimilarPlaylists(Long userId, Long playlistId, int size) {
+        validateReadable(userId, playlistId);
+        return playlistMapper.findSimilarByTrackOverlap(playlistId, size)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     @Transactional
     public PlaylistResponse copyPlaylist(Long userId, Long sourcePlaylistId) {
         Playlist sourcePlaylist = playlistMapper.findById(sourcePlaylistId);

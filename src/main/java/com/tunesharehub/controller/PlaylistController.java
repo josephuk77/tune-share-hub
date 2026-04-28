@@ -54,6 +54,15 @@ public class PlaylistController {
         return playlistService.getPlaylistDetail(AuthUser.userIdOrNull(authUser), playlistId);
     }
 
+    @GetMapping("/playlists/{playlistId}/similar")
+    public List<PlaylistResponse> getSimilarPlaylists(
+            @CurrentUser(required = false) AuthUser authUser,
+            @PathVariable Long playlistId,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int size
+    ) {
+        return playlistService.getSimilarPlaylists(AuthUser.userIdOrNull(authUser), playlistId, size);
+    }
+
     @GetMapping("/playlists")
     public List<PlaylistResponse> getPublicPlaylists(
             @RequestParam(defaultValue = "") String keyword,
