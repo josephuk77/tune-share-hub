@@ -8,6 +8,7 @@ import com.tunesharehub.exception.BusinessException;
 import com.tunesharehub.exception.ForbiddenException;
 import com.tunesharehub.exception.PlaylistNotFoundException;
 import com.tunesharehub.mapper.PlaylistMapper;
+import com.tunesharehub.mapper.PlaylistTrackMapper;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,11 @@ public class PlaylistService {
     private static final String SORT_COMMENT = "comment";
 
     private final PlaylistMapper playlistMapper;
+    private final PlaylistTrackMapper playlistTrackMapper;
 
-    public PlaylistService(PlaylistMapper playlistMapper) {
+    public PlaylistService(PlaylistMapper playlistMapper, PlaylistTrackMapper playlistTrackMapper) {
         this.playlistMapper = playlistMapper;
+        this.playlistTrackMapper = playlistTrackMapper;
     }
 
     @Transactional
@@ -106,6 +109,30 @@ public class PlaylistService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public PlaylistResponse copyPlaylist(Long userId, Long sourcePlaylistId) {
+        Playlist sourcePlaylist = playlistMapper.findByIdForUpdate(sourcePlaylistId);
+        if (sourcePlaylist == null) {
+            throw new PlaylistNotFoundException();
+        }
+        validateReadable(userId, sourcePlaylist);
+
+        Playlist copiedPlaylist = new Playlist();
+        copiedPlaylist.setUserId(userId);
+        copiedPlaylist.setTitle(sourcePlaylist.getTitle());
+        copiedPlaylist.setDescription(sourcePlaylist.getDescription());
+        copiedPlaylist.setCoverImageUrl(sourcePlaylist.getCoverImageUrl());
+        copiedPlaylist.setPublicYn(PUBLIC_YN_FALSE);
+        copiedPlaylist.setOriginPlaylistId(sourcePlaylist.getPlaylistId());
+        copiedPlaylist.setOriginUserNickname(sourcePlaylist.getUserNickname());
+
+        playlistMapper.insert(copiedPlaylist);
+        playlistTrackMapper.copyActiveTracks(sourcePlaylistId, copiedPlaylist.getPlaylistId());
+        playlistMapper.increaseCopyCount(sourcePlaylistId);
+
+        return getPlaylist(userId, copiedPlaylist.getPlaylistId());
     }
 
     @Transactional
@@ -206,9 +233,12 @@ public class PlaylistService {
                 playlist.getDescription(),
                 playlist.getCoverImageUrl(),
                 PUBLIC_YN_TRUE.equals(playlist.getPublicYn()),
+                playlist.getOriginPlaylistId(),
+                playlist.getOriginUserNickname(),
                 playlist.getViewCount(),
                 playlist.getLikeCount(),
                 playlist.getCommentCount(),
+                playlist.getCopyCount(),
                 playlist.getCreatedAt(),
                 playlist.getUpdatedAt()
         );

@@ -10,9 +10,12 @@ public record PlaylistResponse(
         String description,
         String coverImageUrl,
         Boolean publicYn,
+        Long originPlaylistId,
+        String originUserNickname,
         Long viewCount,
         Long likeCount,
         Long commentCount,
+        Long copyCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

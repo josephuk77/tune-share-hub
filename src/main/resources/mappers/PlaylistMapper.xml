@@ -15,14 +15,18 @@
             TITLE,
             DESCRIPTION,
             COVER_IMAGE_URL,
-            PUBLIC_YN
+            PUBLIC_YN,
+            ORIGIN_PLAYLIST_ID,
+            ORIGIN_USER_NICKNAME
         ) VALUES (
             #{playlistId},
             #{userId},
             #{title},
             #{description, jdbcType=CLOB},
             #{coverImageUrl, jdbcType=VARCHAR},
-            #{publicYn}
+            #{publicYn},
+            #{originPlaylistId, jdbcType=NUMERIC},
+            #{originUserNickname, jdbcType=VARCHAR}
         )
     </insert>
 
@@ -35,9 +39,12 @@
             P.DESCRIPTION,
             P.COVER_IMAGE_URL,
             P.PUBLIC_YN,
+            P.ORIGIN_PLAYLIST_ID,
+            P.ORIGIN_USER_NICKNAME,
             P.VIEW_COUNT,
             P.LIKE_COUNT,
             P.COMMENT_COUNT,
+            P.COPY_COUNT,
             P.CREATED_AT,
             P.UPDATED_AT,
             P.DELETED_AT
@@ -69,9 +76,12 @@
             P.DESCRIPTION,
             P.COVER_IMAGE_URL,
             P.PUBLIC_YN,
+            P.ORIGIN_PLAYLIST_ID,
+            P.ORIGIN_USER_NICKNAME,
             P.VIEW_COUNT,
             P.LIKE_COUNT,
             P.COMMENT_COUNT,
+            P.COPY_COUNT,
             P.CREATED_AT,
             P.UPDATED_AT,
             P.DELETED_AT
@@ -92,9 +102,12 @@
             P.DESCRIPTION,
             P.COVER_IMAGE_URL,
             P.PUBLIC_YN,
+            P.ORIGIN_PLAYLIST_ID,
+            P.ORIGIN_USER_NICKNAME,
             P.VIEW_COUNT,
             P.LIKE_COUNT,
             P.COMMENT_COUNT,
+            P.COPY_COUNT,
             P.CREATED_AT,
             P.UPDATED_AT,
             P.DELETED_AT
@@ -116,9 +129,12 @@
             P.DESCRIPTION,
             P.COVER_IMAGE_URL,
             P.PUBLIC_YN,
+            P.ORIGIN_PLAYLIST_ID,
+            P.ORIGIN_USER_NICKNAME,
             P.VIEW_COUNT,
             P.LIKE_COUNT,
             P.COMMENT_COUNT,
+            P.COPY_COUNT,
             P.CREATED_AT,
             P.UPDATED_AT,
             P.DELETED_AT
@@ -163,9 +179,12 @@
             P.DESCRIPTION,
             P.COVER_IMAGE_URL,
             P.PUBLIC_YN,
+            P.ORIGIN_PLAYLIST_ID,
+            P.ORIGIN_USER_NICKNAME,
             P.VIEW_COUNT,
             P.LIKE_COUNT,
             P.COMMENT_COUNT,
+            P.COPY_COUNT,
             P.CREATED_AT,
             P.UPDATED_AT,
             P.DELETED_AT
@@ -255,6 +274,13 @@
     <update id="decreaseLikeCount">
         UPDATE PLAYLISTS
         SET LIKE_COUNT = GREATEST(LIKE_COUNT - 1, 0)
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="increaseCopyCount">
+        UPDATE PLAYLISTS
+        SET COPY_COUNT = COPY_COUNT + 1
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </update>
