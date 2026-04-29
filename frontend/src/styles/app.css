@@ -631,6 +631,7 @@ a:focus-visible {
   color: var(--color-text);
   background: var(--color-surface-raised);
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 

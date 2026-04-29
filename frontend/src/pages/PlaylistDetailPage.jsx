@@ -59,7 +59,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
 
   const { comments, playlist, similarPlaylists, tracks } = detail
   const isOwner = currentUser?.userId === playlist?.userId
-  const heroInitials = useMemo(() => playlist?.title?.slice(0, 2) ?? 'TS', [playlist?.title])
+  const heroInitials = useMemo(() => playlist?.title?.slice(0, 2) || 'TS', [playlist?.title])
 
   return (
     <AppShell>
@@ -155,15 +155,22 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               {similarPlaylists.length > 0 ? (
                 <div className="similar-list">
                   {similarPlaylists.map((similarPlaylist) => (
-                    <button
+                    <a
                       className="similar-card"
+                      href={`#playlist/${similarPlaylist.playlistId}`}
                       key={similarPlaylist.playlistId}
-                      onClick={() => onSelectPlaylist(similarPlaylist.playlistId)}
-                      type="button"
+                      onClick={(event) => {
+                        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                          return
+                        }
+
+                        event.preventDefault()
+                        onSelectPlaylist(similarPlaylist.playlistId)
+                      }}
                     >
                       <strong>{similarPlaylist.title}</strong>
                       <span>{similarPlaylist.userNickname}</span>
-                    </button>
+                    </a>
                   ))}
                 </div>
               ) : (

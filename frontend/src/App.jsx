@@ -68,7 +68,7 @@ function AppContent() {
 }
 
 function getPlaylistIdFromHash() {
-  const match = window.location.hash.match(/^#playlist\/([1-9]\d*)$/)
+  const match = window.location.hash.match(/^#playlist\/(\d+)$/)
   return match ? Number(match[1]) : null
 }
 
