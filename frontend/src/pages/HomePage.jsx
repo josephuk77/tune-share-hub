@@ -39,6 +39,10 @@ const sortOptions = [
 
 const sizeOptions = [10, 20, 50]
 
+const filterValueParsers = {
+  size: Number,
+}
+
 export function HomePage() {
   const [keywordInput, setKeywordInput] = useState('')
   const [filters, setFilters] = useState({
@@ -56,11 +60,7 @@ export function HomePage() {
   useEffect(() => {
     let isActive = true
 
-    Promise.resolve().then(async () => {
-      if (!isActive) {
-        return
-      }
-
+    async function fetchPlaylists() {
       setIsLoading(true)
       setErrorMessage('')
 
@@ -74,8 +74,9 @@ export function HomePage() {
           return
         }
 
-        setPlaylists((current) => (page === 0 ? response : [...current, ...response]))
-        setHasMore(response.length === filters.size)
+        const data = Array.isArray(response) ? response : []
+        setPlaylists((current) => (page === 0 ? data : [...current, ...data]))
+        setHasMore(data.length === filters.size)
       } catch (error) {
         if (isActive) {
           setErrorMessage(error.message ?? '공개 플레이리스트를 불러오지 못했습니다.')
@@ -85,7 +86,9 @@ export function HomePage() {
           setIsLoading(false)
         }
       }
-    })
+    }
+
+    fetchPlaylists()
 
     return () => {
       isActive = false
@@ -113,7 +116,7 @@ export function HomePage() {
     setHasMore(true)
     setFilters((current) => ({
       ...current,
-      [name]: name === 'size' ? Number(value) : value,
+      [name]: filterValueParsers[name]?.(value) ?? value,
     }))
   }
 
@@ -243,7 +246,7 @@ function PlaylistCard({ playlist }) {
   return (
     <article className="playlist-card">
       <div className="playlist-cover" aria-hidden="true">
-        {playlist.coverImageUrl ? <img src={playlist.coverImageUrl} alt="" /> : <span>{playlist.title.slice(0, 2)}</span>}
+        {playlist.coverImageUrl ? <img src={playlist.coverImageUrl} alt="" /> : <span>{playlist.title?.slice(0, 2) ?? ''}</span>}
       </div>
 
       <div className="playlist-content">

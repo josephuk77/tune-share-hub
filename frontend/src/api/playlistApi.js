@@ -9,5 +9,5 @@ export function getPublicPlaylists({ keyword = '', searchType = 'title', sort = 
     size: String(size),
   })
 
-  return apiRequest(`/api/playlists?${params.toString()}`)
+  return apiRequest(`/api/playlists?${params.toString()}`, { skipAuth: true })
 }
