@@ -16,6 +16,7 @@
 .button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--color-cyan);
   outline-offset: 3px;
@@ -28,6 +29,14 @@ a:focus-visible {
 
 .button-secondary {
   border-color: var(--color-border);
+}
+
+.button-ghost {
+  min-height: 36px;
+  border-color: var(--color-border);
+  padding: 0 12px;
+  color: var(--color-muted);
+  background: transparent;
 }
 
 .boot-screen,
@@ -523,6 +532,16 @@ a:focus-visible {
   font-size: 20px;
 }
 
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.detail-action-message {
+  margin-top: -4px;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
@@ -594,6 +613,44 @@ a:focus-visible {
   text-align: right;
 }
 
+.comment-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.comment-form label {
+  color: var(--color-subtle);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.comment-form textarea {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+  line-height: 1.5;
+}
+
+.comment-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.comment-form-actions span {
+  color: var(--color-subtle);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
 .comment-item {
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -601,12 +658,18 @@ a:focus-visible {
   background: var(--color-surface-raised);
 }
 
-.comment-item div {
+.comment-item > div {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   color: var(--color-subtle);
   font-size: 13px;
+}
+
+.comment-item > div > div {
+  display: grid;
+  gap: 4px;
 }
 
 .comment-item strong {
@@ -617,6 +680,10 @@ a:focus-visible {
   margin: 10px 0 0;
   color: var(--color-muted);
   line-height: 1.6;
+}
+
+.comment-delete-button {
+  flex: 0 0 auto;
 }
 
 .similar-list {
