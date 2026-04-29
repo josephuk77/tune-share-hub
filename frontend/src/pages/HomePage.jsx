@@ -157,11 +157,8 @@ export function HomePage({ onSelectPlaylist }) {
         return
       }
 
-      const tracks = Array.isArray(response.tracks) ? response.tracks : []
+      const tracks = Array.isArray(response.items) ? response.items : []
       setTrackResults(tracks)
-      if (tracks.length === 0) {
-        setTrackSearchMessage('검색 결과가 없습니다.')
-      }
     } catch (error) {
       if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
         return
@@ -300,7 +297,7 @@ export function HomePage({ onSelectPlaylist }) {
           <div id="track-search" className="panel">
             <div className="panel-header">
               <h2>Spotify 곡 검색</h2>
-              <span>{trackResults.length} results</span>
+              <span>{trackResults.length}개의 결과</span>
             </div>
 
             <form className="home-track-search" onSubmit={handleTrackSearchSubmit}>
