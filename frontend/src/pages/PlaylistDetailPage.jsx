@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getPlaylist, getPlaylistComments, getPlaylistTracks, getSimilarPlaylists } from '../api/playlistApi.js'
+import {
+  createPlaylistComment,
+  deletePlaylistComment,
+  getPlaylist,
+  getPlaylistComments,
+  getPlaylistTracks,
+  getSimilarPlaylists,
+  isPlaylistLiked,
+  likePlaylist,
+  unlikePlaylist,
+} from '../api/playlistApi.js'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
 import { AppShell } from '../components/layout/AppShell.jsx'
@@ -13,6 +23,13 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   })
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [commentContent, setCommentContent] = useState('')
+  const [actionMessage, setActionMessage] = useState('')
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false)
+  const [deletingCommentId, setDeletingCommentId] = useState(null)
+  const [hasLiked, setHasLiked] = useState(false)
+  const [isLikeSubmitting, setIsLikeSubmitting] = useState(false)
+  const currentUserId = currentUser?.userId
 
   useEffect(() => {
     let isActive = true
@@ -20,13 +37,17 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     async function fetchDetail() {
       setIsLoading(true)
       setErrorMessage('')
+      setCommentContent('')
+      setActionMessage('')
+      setHasLiked(false)
 
       try {
-        const [playlist, tracks, comments, similarPlaylists] = await Promise.all([
+        const [playlist, tracks, comments, similarPlaylists, liked] = await Promise.all([
           getPlaylist(playlistId),
           getPlaylistTracks(playlistId).catch(() => []),
           getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
           getSimilarPlaylists(playlistId).catch(() => []),
+          currentUserId ? isPlaylistLiked(playlistId).catch(() => false) : Promise.resolve(false),
         ])
 
         if (!isActive) {
@@ -39,6 +60,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           comments: Array.isArray(comments) ? comments : [],
           similarPlaylists: Array.isArray(similarPlaylists) ? similarPlaylists : [],
         })
+        setHasLiked(liked)
       } catch (error) {
         if (isActive) {
           setErrorMessage(error.message ?? '플레이리스트 상세를 불러오지 못했습니다.')
@@ -55,11 +77,112 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     return () => {
       isActive = false
     }
-  }, [playlistId])
+  }, [currentUserId, playlistId])
 
   const { comments, playlist, similarPlaylists, tracks } = detail
-  const isOwner = currentUser?.userId === playlist?.userId
+  const isOwner = currentUserId === playlist?.userId
   const heroInitials = useMemo(() => playlist?.title?.slice(0, 2) || 'TS', [playlist?.title])
+  const trimmedComment = commentContent.trim()
+
+  async function handleLikeToggle() {
+    if (!playlist) {
+      return
+    }
+
+    if (!currentUser) {
+      setActionMessage('좋아요를 남기려면 먼저 로그인해 주세요.')
+      return
+    }
+
+    setIsLikeSubmitting(true)
+    setActionMessage('')
+
+    try {
+      const response = hasLiked ? await unlikePlaylist(playlist.playlistId) : await likePlaylist(playlist.playlistId)
+      setHasLiked(Boolean(response.liked))
+      updatePlaylist({
+        likeCount: response.likeCount,
+      })
+    } catch (error) {
+      setActionMessage(error.message ?? '좋아요 상태를 변경하지 못했습니다.')
+    } finally {
+      setIsLikeSubmitting(false)
+    }
+  }
+
+  async function handleCommentSubmit(event) {
+    event.preventDefault()
+
+    if (!playlist || !trimmedComment) {
+      return
+    }
+
+    if (!currentUser) {
+      setActionMessage('댓글을 작성하려면 먼저 로그인해 주세요.')
+      return
+    }
+
+    setIsCommentSubmitting(true)
+    setActionMessage('')
+
+    try {
+      const createdComment = await createPlaylistComment(playlist.playlistId, trimmedComment)
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        playlist: currentDetail.playlist
+          ? {
+              ...currentDetail.playlist,
+              commentCount: Number(currentDetail.playlist.commentCount ?? 0) + 1,
+            }
+          : currentDetail.playlist,
+        comments: [...currentDetail.comments, createdComment],
+      }))
+      setCommentContent('')
+    } catch (error) {
+      setActionMessage(error.message ?? '댓글을 등록하지 못했습니다.')
+    } finally {
+      setIsCommentSubmitting(false)
+    }
+  }
+
+  async function handleCommentDelete(commentId) {
+    if (!window.confirm('댓글을 삭제할까요?')) {
+      return
+    }
+
+    setDeletingCommentId(commentId)
+    setActionMessage('')
+
+    try {
+      await deletePlaylistComment(commentId)
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        playlist: currentDetail.playlist
+          ? {
+              ...currentDetail.playlist,
+              commentCount: Math.max(Number(currentDetail.playlist.commentCount ?? 0) - 1, 0),
+            }
+          : currentDetail.playlist,
+        comments: currentDetail.comments.filter((comment) => comment.commentId !== commentId),
+      }))
+    } catch (error) {
+      setActionMessage(error.message ?? '댓글을 삭제하지 못했습니다.')
+    } finally {
+      setDeletingCommentId(null)
+    }
+  }
+
+  function updatePlaylist(updates) {
+    setDetail((currentDetail) => ({
+      ...currentDetail,
+      playlist: currentDetail.playlist
+        ? {
+            ...currentDetail.playlist,
+            ...updates,
+          }
+        : currentDetail.playlist,
+    }))
+  }
 
   return (
     <AppShell>
@@ -110,8 +233,16 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
                   <Stat label="댓글" value={playlist.commentCount} />
                   <Stat label="복사" value={playlist.copyCount} />
                 </div>
+
+                <div className="detail-actions">
+                  <Button className={hasLiked ? 'button-primary' : 'button-secondary'} disabled={isLikeSubmitting} onClick={handleLikeToggle}>
+                    {isLikeSubmitting ? '처리 중' : hasLiked ? '좋아요 취소' : '좋아요'}
+                  </Button>
+                </div>
               </div>
             </section>
+
+            {actionMessage ? <p className="panel-error detail-action-message">{actionMessage}</p> : null}
 
             <section className="detail-grid">
               <div className="panel detail-panel">
@@ -133,12 +264,35 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               <div className="panel detail-panel">
                 <div className="panel-header">
                   <h2>댓글</h2>
-                  <span>{comments.length} comments</span>
+                  <span>{formatCount(playlist.commentCount)} comments</span>
                 </div>
+                <form className="comment-form" onSubmit={handleCommentSubmit}>
+                  <label htmlFor="playlist-comment">댓글 작성</label>
+                  <textarea
+                    id="playlist-comment"
+                    maxLength={1000}
+                    onChange={(event) => setCommentContent(event.target.value)}
+                    placeholder={currentUser ? '플레이리스트에 대한 감상을 남겨보세요.' : '로그인 후 댓글을 작성할 수 있습니다.'}
+                    rows={4}
+                    value={commentContent}
+                  />
+                  <div className="comment-form-actions">
+                    <span>{trimmedComment.length}/1000</span>
+                    <Button disabled={isCommentSubmitting || !trimmedComment} type="submit">
+                      {isCommentSubmitting ? '등록 중' : '댓글 등록'}
+                    </Button>
+                  </div>
+                </form>
                 {comments.length > 0 ? (
                   <div className="comment-list">
                     {comments.map((comment) => (
-                      <CommentItem comment={comment} key={comment.commentId} />
+                      <CommentItem
+                        comment={comment}
+                        currentUser={currentUser}
+                        deletingCommentId={deletingCommentId}
+                        key={comment.commentId}
+                        onDelete={handleCommentDelete}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -209,12 +363,22 @@ function TrackRow({ track }) {
   )
 }
 
-function CommentItem({ comment }) {
+function CommentItem({ comment, currentUser, deletingCommentId, onDelete }) {
+  const isCommentOwner = currentUser?.userId === comment.userId
+  const isDeleting = deletingCommentId === comment.commentId
+
   return (
     <article className="comment-item">
       <div>
-        <strong>{comment.userNickname}</strong>
-        <span>{formatDate(comment.createdAt)}</span>
+        <div>
+          <strong>{comment.userNickname}</strong>
+          <span>{formatDate(comment.createdAt)}</span>
+        </div>
+        {isCommentOwner ? (
+          <Button className="button-ghost comment-delete-button" disabled={isDeleting} onClick={() => onDelete(comment.commentId)}>
+            {isDeleting ? '삭제 중' : '삭제'}
+          </Button>
+        ) : null}
       </div>
       <p>{comment.content}</p>
     </article>

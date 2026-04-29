@@ -2,7 +2,7 @@ import { Button } from '../common/Button.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
 
 export function AppShell({ children }) {
-  const { logout, user } = useAuth()
+  const { isAuthenticated, logout, user } = useAuth()
 
   return (
     <div className="app-shell">
@@ -27,12 +27,18 @@ export function AppShell({ children }) {
       <div className="main-column">
         <header className="top-bar">
           <div>
-            <span className="eyebrow">Signed in</span>
-            <strong>{user.nickname}</strong>
+            <span className="eyebrow">{isAuthenticated ? 'Signed in' : 'Guest'}</span>
+            <strong>{user?.nickname ?? '둘러보기 모드'}</strong>
           </div>
-          <Button className="button-secondary" onClick={logout}>
-            로그아웃
-          </Button>
+          {isAuthenticated ? (
+            <Button className="button-secondary" onClick={logout}>
+              로그아웃
+            </Button>
+          ) : (
+            <a className="button button-secondary top-login-link" href="#login">
+              로그인
+            </a>
+          )}
         </header>
         {children}
       </div>
