@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthProvider.jsx'
 import { useAuth } from './hooks/useAuth.js'
 import { HomePage } from './pages/HomePage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
+import { MyPage } from './pages/MyPage.jsx'
 import { PlaylistBuilderPage } from './pages/PlaylistBuilderPage.jsx'
 import { PlaylistDetailPage } from './pages/PlaylistDetailPage.jsx'
 
@@ -52,6 +53,17 @@ function AppContent() {
     )
   }
 
+  if (hashState.isMyPageRoute) {
+    return (
+      <MyPage
+        currentUser={user}
+        onSelectPlaylist={(playlistId) => {
+          window.location.hash = `playlist/${playlistId}`
+        }}
+      />
+    )
+  }
+
   if (hashState.selectedPlaylistId) {
     return (
       <PlaylistDetailPage
@@ -81,6 +93,7 @@ function getHashState() {
   return {
     isBuilderRoute: window.location.hash === '#playlist-builder',
     isLoginRoute: window.location.hash === '#login',
+    isMyPageRoute: window.location.hash === '#my-playlists',
     selectedPlaylistId: match ? Number(match[1]) : null,
   }
 }
