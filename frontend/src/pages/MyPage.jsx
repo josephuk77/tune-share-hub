@@ -24,9 +24,9 @@ export function MyPage({ currentUser, onSelectPlaylist }) {
 
       try {
         const [playlists, comments, liked] = await Promise.all([
-          getMyPlaylists({ size: 20 }),
-          getMyComments({ size: 20 }),
-          getLikedPlaylists({ size: 20 }),
+          getMyPlaylists({ size: 20 }).catch(() => []),
+          getMyComments({ size: 20 }).catch(() => []),
+          getLikedPlaylists({ size: 20 }).catch(() => []),
         ])
 
         if (!isActive) {
@@ -164,7 +164,7 @@ function PlaylistActivityItem({ onSelectPlaylist, playlist }) {
   return (
     <button className="my-activity-item" onClick={() => onSelectPlaylist(playlist.playlistId)} type="button">
       <div className="my-activity-cover" aria-hidden="true">
-        {playlist.coverImageUrl ? <img src={playlist.coverImageUrl} alt="" /> : <span>{playlist.title?.slice(0, 2) ?? 'TS'}</span>}
+        {playlist.coverImageUrl ? <img src={playlist.coverImageUrl} alt="" /> : <span>{playlist.title?.slice(0, 2) || 'TS'}</span>}
       </div>
       <div className="my-activity-main">
         <strong>{playlist.title}</strong>
@@ -196,13 +196,15 @@ function formatCount(value) {
   return Number(value ?? 0).toLocaleString('ko-KR')
 }
 
+const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
 function formatDate(value) {
   if (!value) {
     return '-'
   }
 
-  return new Intl.DateTimeFormat('ko-KR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
+  return dateFormatter.format(new Date(value))
 }
