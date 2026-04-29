@@ -16,8 +16,36 @@ export function getPlaylist(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}`)
 }
 
+export function createPlaylist({ coverImageUrl = '', description = '', publicYn = true, title }) {
+  return apiRequest('/api/playlists', {
+    method: 'POST',
+    body: JSON.stringify({
+      coverImageUrl,
+      description,
+      publicYn,
+      title,
+    }),
+  })
+}
+
 export function getPlaylistTracks(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}/tracks`)
+}
+
+export function addPlaylistTrack(playlistId, track) {
+  return apiRequest(`/api/playlists/${playlistId}/tracks`, {
+    method: 'POST',
+    body: JSON.stringify({
+      albumImageUrl: track.albumImageUrl,
+      albumName: track.albumName,
+      artistName: track.artistName,
+      durationMs: track.durationMs,
+      previewUrl: track.previewUrl,
+      spotifyTrackId: track.spotifyTrackId,
+      spotifyUrl: track.spotifyUrl,
+      title: track.title,
+    }),
+  })
 }
 
 export function getPlaylistComments(playlistId, { page = 0, size = 20 } = {}) {
@@ -91,4 +119,14 @@ export function unlikePlaylist(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}/likes`, {
     method: 'DELETE',
   })
+}
+
+export function searchSpotifyTracks({ page = 0, query, size = 10 }) {
+  const params = new URLSearchParams({
+    q: query,
+    page: String(page),
+    size: String(size),
+  })
+
+  return apiRequest(`/api/spotify/search/tracks?${params.toString()}`, { skipAuth: true })
 }

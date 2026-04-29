@@ -13,8 +13,8 @@ const dashboardItems = [
     tone: 'green',
   },
   {
-    id: 'my-playlists',
-    label: '내 플레이리스트',
+    id: 'playlist-builder',
+    label: '새 플레이리스트',
     metric: 'Create',
     tone: 'cyan',
   },
@@ -237,6 +237,11 @@ export function HomePage({ onSelectPlaylist }) {
               title="아직 만든 플레이리스트가 없습니다"
               description="나만의 첫 플레이리스트를 준비할 차례입니다."
             />
+            <div className="panel-actions">
+              <a className="button button-primary" href="#playlist-builder">
+                새 플레이리스트 만들기
+              </a>
+            </div>
           </div>
         </section>
       </main>
