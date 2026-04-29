@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   addPlaylistTrack,
+  copyPlaylist,
   createPlaylistComment,
   deletePlaylist,
   deletePlaylistComment,
@@ -41,6 +42,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [editDescription, setEditDescription] = useState('')
   const [editPublicYn, setEditPublicYn] = useState(true)
   const [isPlaylistSaving, setIsPlaylistSaving] = useState(false)
+  const [isPlaylistCopying, setIsPlaylistCopying] = useState(false)
   const [isPlaylistDeleting, setIsPlaylistDeleting] = useState(false)
   const [trackSearchQuery, setTrackSearchQuery] = useState('')
   const [trackSearchResults, setTrackSearchResults] = useState([])
@@ -50,7 +52,20 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [addingTrackId, setAddingTrackId] = useState(null)
   const [deletingTrackId, setDeletingTrackId] = useState(null)
   const [reorderingTrackId, setReorderingTrackId] = useState(null)
+  const isMountedRef = useRef(false)
+  const activePlaylistIdRef = useRef(playlistId)
+  const copyRedirectTimeoutRef = useRef(null)
   const currentUserId = currentUser?.userId
+  activePlaylistIdRef.current = playlistId
+
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+      window.clearTimeout(copyRedirectTimeoutRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     let isActive = true
@@ -65,6 +80,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setTrackSearchResults([])
       setHasLiked(false)
       setIsEditingPlaylist(false)
+      setIsPlaylistCopying(false)
 
       try {
         const [playlist, tracks, comments, similarPlaylists, liked] = await Promise.all([
@@ -104,6 +120,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
 
     return () => {
       isActive = false
+      window.clearTimeout(copyRedirectTimeoutRef.current)
     }
   }, [currentUserId, playlistId])
 
@@ -219,6 +236,41 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     } catch (error) {
       showActionMessage(error.message ?? '플레이리스트를 삭제하지 못했습니다.')
       setIsPlaylistDeleting(false)
+    }
+  }
+
+  async function handlePlaylistCopy() {
+    if (!playlist || isOwner) {
+      return
+    }
+
+    if (!currentUser) {
+      showActionMessage('플레이리스트를 복사하려면 먼저 로그인해 주세요.')
+      return
+    }
+
+    setIsPlaylistCopying(true)
+    clearActionMessage()
+
+    const sourcePlaylistId = playlist.playlistId
+
+    try {
+      const copiedPlaylist = await copyPlaylist(sourcePlaylistId)
+      if (!isMountedRef.current || activePlaylistIdRef.current !== sourcePlaylistId) {
+        return
+      }
+
+      updatePlaylist({
+        copyCount: Number(playlist.copyCount ?? 0) + 1,
+      })
+      showActionMessage('플레이리스트를 복사했습니다. 복사본으로 이동합니다.', 'success')
+      window.clearTimeout(copyRedirectTimeoutRef.current)
+      copyRedirectTimeoutRef.current = window.setTimeout(() => {
+        onSelectPlaylist(copiedPlaylist.playlistId)
+      }, 500)
+    } catch (error) {
+      showActionMessage(error.message ?? '플레이리스트를 복사하지 못했습니다.')
+      setIsPlaylistCopying(false)
     }
   }
 
@@ -468,7 +520,11 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
                         {isPlaylistDeleting ? '삭제 중' : '삭제'}
                       </Button>
                     </>
-                  ) : null}
+                  ) : (
+                    <Button className="button-secondary" disabled={isPlaylistCopying} onClick={handlePlaylistCopy}>
+                      {isPlaylistCopying ? '복사 중' : '복사'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </section>

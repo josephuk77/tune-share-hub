@@ -46,6 +46,12 @@ export function deletePlaylist(playlistId) {
   })
 }
 
+export function copyPlaylist(playlistId) {
+  return apiRequest(`/api/playlists/${playlistId}/copy`, {
+    method: 'POST',
+  })
+}
+
 export function getPlaylistTracks(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}/tracks`)
 }
