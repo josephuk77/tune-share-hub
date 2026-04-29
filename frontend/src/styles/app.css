@@ -441,6 +441,82 @@ a:focus-visible {
   margin-top: 16px;
 }
 
+.home-track-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.home-track-search input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+}
+
+.home-track-list {
+  display: grid;
+  gap: 10px;
+}
+
+.home-track-item {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--color-surface-raised);
+}
+
+.home-track-cover {
+  display: grid;
+  overflow: hidden;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 8px;
+  color: #07110b;
+  background: var(--color-rose);
+  font-weight: 800;
+}
+
+.home-track-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-track-main {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.home-track-main strong,
+.home-track-main span,
+.home-track-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-track-main span,
+.home-track-main small {
+  color: var(--color-subtle);
+}
+
+.home-track-main small {
+  font-size: 12px;
+}
+
 .builder-workspace {
   display: grid;
   gap: 16px;
@@ -1155,6 +1231,8 @@ a:focus-visible {
   .detail-grid,
   .detail-hero,
   .builder-search,
+  .home-track-search,
+  .home-track-item,
   .track-search-form,
   .track-candidate,
   .builder-track-card,
