@@ -1,4 +1,7 @@
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 44px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -6,6 +9,7 @@
   color: var(--color-text);
   background: var(--color-surface-raised);
   cursor: pointer;
+  text-decoration: none;
 }
 
 .button:disabled {

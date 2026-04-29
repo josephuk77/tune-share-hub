@@ -3,6 +3,7 @@ import { AppShell } from '../components/layout/AppShell.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
 import { getPublicPlaylists } from '../api/playlistApi.js'
+import { useAuth } from '../hooks/useAuth.js'
 
 const dashboardItems = [
   {
@@ -44,6 +45,7 @@ const filterValueParsers = {
 }
 
 export function HomePage({ onSelectPlaylist }) {
+  const { isAuthenticated } = useAuth()
   const [keywordInput, setKeywordInput] = useState('')
   const [filters, setFilters] = useState({
     keyword: '',
@@ -128,7 +130,7 @@ export function HomePage({ onSelectPlaylist }) {
             <p className="eyebrow">Dashboard</p>
             <h1>플레이리스트 작업대</h1>
           </div>
-          <span className="status-pill">세션 활성</span>
+          <span className="status-pill">{isAuthenticated ? '세션 활성' : '둘러보기'}</span>
         </section>
 
         <section className="dashboard-grid" aria-label="주요 작업">

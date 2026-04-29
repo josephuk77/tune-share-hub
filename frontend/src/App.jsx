@@ -15,11 +15,11 @@ function App() {
 
 function AppContent() {
   const { isAuthenticated, isBootstrapping, user } = useAuth()
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState(() => getPlaylistIdFromHash())
+  const [hashState, setHashState] = useState(() => getHashState())
 
   useEffect(() => {
     function handleHashChange() {
-      setSelectedPlaylistId(getPlaylistIdFromHash())
+      setHashState(getHashState())
     }
 
     window.addEventListener('hashchange', handleHashChange)
@@ -36,23 +36,23 @@ function AppContent() {
     )
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && hashState.isLoginRoute) {
     return <LoginPage />
   }
 
-  if (selectedPlaylistId) {
+  if (hashState.selectedPlaylistId) {
     return (
       <PlaylistDetailPage
         currentUser={user}
         onBack={() => {
           window.location.hash = 'public-playlists'
-          setSelectedPlaylistId(null)
+          setHashState(getHashState())
         }}
         onSelectPlaylist={(playlistId) => {
           window.location.hash = `playlist/${playlistId}`
-          setSelectedPlaylistId(playlistId)
+          setHashState(getHashState())
         }}
-        playlistId={selectedPlaylistId}
+        playlistId={hashState.selectedPlaylistId}
       />
     )
   }
@@ -61,15 +61,18 @@ function AppContent() {
     <HomePage
       onSelectPlaylist={(playlistId) => {
         window.location.hash = `playlist/${playlistId}`
-        setSelectedPlaylistId(playlistId)
+        setHashState(getHashState())
       }}
     />
   )
 }
 
-function getPlaylistIdFromHash() {
+function getHashState() {
   const match = window.location.hash.match(/^#playlist\/(\d+)$/)
-  return match ? Number(match[1]) : null
+  return {
+    isLoginRoute: window.location.hash === '#login',
+    selectedPlaylistId: match ? Number(match[1]) : null,
+  }
 }
 
 export default App
