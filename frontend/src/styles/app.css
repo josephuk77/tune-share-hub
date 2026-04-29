@@ -35,6 +35,12 @@ a:focus-visible {
   border-color: var(--color-border);
 }
 
+.button-danger {
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.34);
+}
+
 .button-ghost {
   min-height: 36px;
   border-color: var(--color-border);
@@ -340,6 +346,12 @@ a:focus-visible {
 .panel-error {
   margin: 0 0 14px;
   color: var(--color-rose);
+  font-size: 14px;
+}
+
+.panel-success {
+  margin: 0 0 14px;
+  color: var(--color-green);
   font-size: 14px;
 }
 
@@ -827,6 +839,62 @@ a:focus-visible {
 
 .detail-action-message {
   margin-top: -4px;
+}
+
+.detail-edit-panel {
+  min-height: 0;
+}
+
+.detail-edit-form {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-edit-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-edit-form input,
+.detail-edit-form textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+}
+
+.detail-edit-form input {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.detail-edit-form textarea {
+  min-height: 112px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.detail-edit-form .detail-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-edit-form .detail-toggle input {
+  width: 18px;
+  height: 18px;
+}
+
+.detail-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .detail-grid {

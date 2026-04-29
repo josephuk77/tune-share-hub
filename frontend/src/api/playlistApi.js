@@ -28,6 +28,24 @@ export function createPlaylist({ coverImageUrl = '', description = '', publicYn 
   })
 }
 
+export function updatePlaylist(playlistId, { coverImageUrl = '', description = '', publicYn = true, title }) {
+  return apiRequest(`/api/playlists/${playlistId}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      coverImageUrl,
+      description,
+      publicYn,
+      title,
+    }),
+  })
+}
+
+export function deletePlaylist(playlistId) {
+  return apiRequest(`/api/playlists/${playlistId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function getPlaylistTracks(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}/tracks`)
 }
