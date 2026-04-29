@@ -43,7 +43,7 @@ const filterValueParsers = {
   size: Number,
 }
 
-export function HomePage() {
+export function HomePage({ onSelectPlaylist }) {
   const [keywordInput, setKeywordInput] = useState('')
   const [filters, setFilters] = useState({
     keyword: '',
@@ -205,7 +205,7 @@ export function HomePage() {
               <>
                 <div className="playlist-list" aria-live="polite">
                   {playlists.map((playlist) => (
-                    <PlaylistCard key={playlist.playlistId} playlist={playlist} />
+                    <PlaylistCard key={playlist.playlistId} onSelectPlaylist={onSelectPlaylist} playlist={playlist} />
                   ))}
                 </div>
                 <div className="list-actions">
@@ -242,9 +242,18 @@ export function HomePage() {
   )
 }
 
-function PlaylistCard({ playlist }) {
+function PlaylistCard({ onSelectPlaylist, playlist }) {
+  function handleClick(event) {
+    if (!onSelectPlaylist) {
+      return
+    }
+
+    event.preventDefault()
+    onSelectPlaylist(playlist.playlistId)
+  }
+
   return (
-    <article className="playlist-card">
+    <a className="playlist-card" href={`#playlist/${playlist.playlistId}`} onClick={handleClick}>
       <div className="playlist-cover" aria-hidden="true">
         {playlist.coverImageUrl ? <img src={playlist.coverImageUrl} alt="" /> : <span>{playlist.title?.slice(0, 2) ?? ''}</span>}
       </div>
@@ -261,7 +270,7 @@ function PlaylistCard({ playlist }) {
           <span>댓글 {formatCount(playlist.commentCount)}</span>
         </div>
       </div>
-    </article>
+    </a>
   )
 }
 
