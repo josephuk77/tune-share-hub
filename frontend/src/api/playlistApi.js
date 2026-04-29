@@ -66,6 +66,21 @@ export function addPlaylistTrack(playlistId, track) {
   })
 }
 
+export function deletePlaylistTrack(playlistId, playlistTrackId) {
+  return apiRequest(`/api/playlists/${playlistId}/tracks/${playlistTrackId}`, {
+    method: 'DELETE',
+  })
+}
+
+export function reorderPlaylistTracks(playlistId, playlistTrackIds) {
+  return apiRequest(`/api/playlists/${playlistId}/tracks/positions`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      playlistTrackIds,
+    }),
+  })
+}
+
 export function getPlaylistComments(playlistId, { page = 0, size = 20 } = {}) {
   const params = new URLSearchParams({
     page: String(page),

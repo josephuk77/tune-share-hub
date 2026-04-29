@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  addPlaylistTrack,
   createPlaylistComment,
   deletePlaylist,
   deletePlaylistComment,
+  deletePlaylistTrack,
   getPlaylist,
   getPlaylistComments,
   getPlaylistTracks,
   getSimilarPlaylists,
   isPlaylistLiked,
   likePlaylist,
+  reorderPlaylistTracks,
+  searchSpotifyTracks,
   unlikePlaylist,
   updatePlaylist as requestPlaylistUpdate,
 } from '../api/playlistApi.js'
@@ -38,6 +42,14 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [editPublicYn, setEditPublicYn] = useState(true)
   const [isPlaylistSaving, setIsPlaylistSaving] = useState(false)
   const [isPlaylistDeleting, setIsPlaylistDeleting] = useState(false)
+  const [trackSearchQuery, setTrackSearchQuery] = useState('')
+  const [trackSearchResults, setTrackSearchResults] = useState([])
+  const [trackMessage, setTrackMessage] = useState('')
+  const [trackMessageType, setTrackMessageType] = useState('error')
+  const [isTrackSearching, setIsTrackSearching] = useState(false)
+  const [addingTrackId, setAddingTrackId] = useState(null)
+  const [deletingTrackId, setDeletingTrackId] = useState(null)
+  const [reorderingTrackId, setReorderingTrackId] = useState(null)
   const currentUserId = currentUser?.userId
 
   useEffect(() => {
@@ -48,6 +60,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setErrorMessage('')
       setCommentContent('')
       clearActionMessage()
+      clearTrackMessage()
+      setTrackSearchQuery('')
+      setTrackSearchResults([])
       setHasLiked(false)
       setIsEditingPlaylist(false)
 
@@ -97,6 +112,8 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const heroInitials = useMemo(() => playlist?.title?.slice(0, 2) || 'TS', [playlist?.title])
   const trimmedComment = commentContent.trim()
   const trimmedEditTitle = editTitle.trim()
+  const trimmedTrackSearchQuery = trackSearchQuery.trim()
+  const isTrackMutating = Boolean(addingTrackId || deletingTrackId || reorderingTrackId)
 
   function clearActionMessage() {
     setActionMessage('')
@@ -106,6 +123,16 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   function showActionMessage(message, type = 'error') {
     setActionMessage(message)
     setActionMessageType(type)
+  }
+
+  function clearTrackMessage() {
+    setTrackMessage('')
+    setTrackMessageType('error')
+  }
+
+  function showTrackMessage(message, type = 'error') {
+    setTrackMessage(message)
+    setTrackMessageType(type)
   }
 
   async function handleLikeToggle() {
@@ -257,6 +284,115 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     }
   }
 
+  async function handleTrackSearchSubmit(event) {
+    event.preventDefault()
+
+    if (!trimmedTrackSearchQuery) {
+      showTrackMessage('검색어를 입력해 주세요.')
+      return
+    }
+
+    setIsTrackSearching(true)
+    clearTrackMessage()
+
+    try {
+      const response = await searchSpotifyTracks({ query: trimmedTrackSearchQuery })
+      const results = Array.isArray(response.tracks) ? response.tracks : []
+      setTrackSearchResults(results)
+      if (results.length === 0) {
+        showTrackMessage('검색 결과가 없습니다.')
+      }
+    } catch (error) {
+      showTrackMessage(error.message ?? '곡 검색에 실패했습니다.')
+    } finally {
+      setIsTrackSearching(false)
+    }
+  }
+
+  async function handleTrackAdd(track) {
+    if (!playlist || !isOwner) {
+      return
+    }
+
+    if (tracks.some((playlistTrack) => playlistTrack.spotifyTrackId === track.spotifyTrackId)) {
+      showTrackMessage('이미 수록된 곡입니다.')
+      return
+    }
+
+    setAddingTrackId(track.spotifyTrackId)
+    clearTrackMessage()
+
+    try {
+      const createdTrack = await addPlaylistTrack(playlist.playlistId, track)
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        tracks: [...currentDetail.tracks, createdTrack],
+      }))
+      showTrackMessage('수록곡을 추가했습니다.', 'success')
+    } catch (error) {
+      showTrackMessage(error.message ?? '수록곡을 추가하지 못했습니다.')
+    } finally {
+      setAddingTrackId(null)
+    }
+  }
+
+  async function handleTrackDelete(track) {
+    if (!playlist || !isOwner || !window.confirm('이 곡을 플레이리스트에서 제거할까요?')) {
+      return
+    }
+
+    setDeletingTrackId(track.playlistTrackId)
+    clearTrackMessage()
+
+    try {
+      await deletePlaylistTrack(playlist.playlistId, track.playlistTrackId)
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        tracks: currentDetail.tracks.filter((playlistTrack) => playlistTrack.playlistTrackId !== track.playlistTrackId),
+      }))
+      showTrackMessage('수록곡을 제거했습니다.', 'success')
+    } catch (error) {
+      showTrackMessage(error.message ?? '수록곡을 제거하지 못했습니다.')
+    } finally {
+      setDeletingTrackId(null)
+    }
+  }
+
+  async function handleTrackMove(track, direction) {
+    if (!playlist || !isOwner) {
+      return
+    }
+
+    const currentIndex = tracks.findIndex((playlistTrack) => playlistTrack.playlistTrackId === track.playlistTrackId)
+    const nextIndex = currentIndex + direction
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= tracks.length) {
+      return
+    }
+
+    const nextTracks = [...tracks]
+    const [movedTrack] = nextTracks.splice(currentIndex, 1)
+    nextTracks.splice(nextIndex, 0, movedTrack)
+
+    setReorderingTrackId(track.playlistTrackId)
+    clearTrackMessage()
+
+    try {
+      const reorderedTracks = await reorderPlaylistTracks(
+        playlist.playlistId,
+        nextTracks.map((playlistTrack) => playlistTrack.playlistTrackId)
+      )
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        tracks: Array.isArray(reorderedTracks) ? reorderedTracks : nextTracks,
+      }))
+      showTrackMessage('수록곡 순서를 변경했습니다.', 'success')
+    } catch (error) {
+      showTrackMessage(error.message ?? '수록곡 순서를 변경하지 못했습니다.')
+    } finally {
+      setReorderingTrackId(null)
+    }
+  }
+
   function updatePlaylist(updates) {
     setDetail((currentDetail) => ({
       ...currentDetail,
@@ -378,10 +514,55 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
                   <h2>수록곡</h2>
                   <span>{tracks.length} tracks</span>
                 </div>
+                {isOwner ? (
+                  <div className="track-manager">
+                    <form className="track-search-form" onSubmit={handleTrackSearchSubmit}>
+                      <input
+                        onChange={(event) => setTrackSearchQuery(event.target.value)}
+                        placeholder="곡명 또는 아티스트 검색"
+                        type="search"
+                        value={trackSearchQuery}
+                      />
+                      <Button className="button-secondary" disabled={isTrackSearching} type="submit">
+                        {isTrackSearching ? '검색 중' : '검색'}
+                      </Button>
+                    </form>
+                    {trackMessage ? (
+                      <p className={`${trackMessageType === 'success' ? 'panel-success' : 'panel-error'} track-manager-message`}>
+                        {trackMessage}
+                      </p>
+                    ) : null}
+                    {trackSearchResults.length > 0 ? (
+                      <div className="track-search-results">
+                        {trackSearchResults.map((track) => (
+                          <TrackCandidate
+                            isAdding={addingTrackId === track.spotifyTrackId}
+                            isDisabled={isTrackMutating}
+                            isSelected={tracks.some((playlistTrack) => playlistTrack.spotifyTrackId === track.spotifyTrackId)}
+                            key={track.spotifyTrackId}
+                            onAdd={handleTrackAdd}
+                            track={track}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 {tracks.length > 0 ? (
                   <div className="track-list">
-                    {tracks.map((track) => (
-                      <TrackRow key={track.playlistTrackId} track={track} />
+                    {tracks.map((track, index) => (
+                      <TrackRow
+                        canManage={isOwner}
+                        isBusy={isTrackMutating}
+                        isDeleting={deletingTrackId === track.playlistTrackId}
+                        isFirst={index === 0}
+                        isLast={index === tracks.length - 1}
+                        isReordering={reorderingTrackId === track.playlistTrackId}
+                        key={track.playlistTrackId}
+                        onDelete={handleTrackDelete}
+                        onMove={handleTrackMove}
+                        track={track}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -475,19 +656,56 @@ function Stat({ label, value }) {
   )
 }
 
-function TrackRow({ track }) {
+function TrackCandidate({ isAdding, isDisabled, isSelected, onAdd, track }) {
+  return (
+    <article className="track-candidate">
+      <TrackArtwork track={track} />
+      <TrackText track={track} />
+      <Button className="button-secondary" disabled={isDisabled || isAdding || isSelected} onClick={() => onAdd(track)}>
+        {isAdding ? '추가 중' : isSelected ? '추가됨' : '추가'}
+      </Button>
+    </article>
+  )
+}
+
+function TrackRow({ canManage, isBusy, isDeleting, isFirst, isLast, isReordering, onDelete, onMove, track }) {
   return (
     <article className="track-row">
-      <div className="track-cover" aria-hidden="true">
-        {track.albumImageUrl ? <img src={track.albumImageUrl} alt="" /> : <span>{track.title?.slice(0, 1) ?? 'T'}</span>}
-      </div>
-      <div className="track-main">
-        <strong>{track.title}</strong>
-        <span>{track.artistName}</span>
-      </div>
+      <TrackArtwork track={track} />
+      <TrackText track={track} />
       <span className="track-album">{track.albumName}</span>
       <span className="track-duration">{formatDuration(track.durationMs)}</span>
+      {canManage ? (
+        <div className="track-actions">
+          <Button className="button-ghost" disabled={isBusy || isDeleting || isFirst || isReordering} onClick={() => onMove(track, -1)}>
+            위
+          </Button>
+          <Button className="button-ghost" disabled={isBusy || isDeleting || isLast || isReordering} onClick={() => onMove(track, 1)}>
+            아래
+          </Button>
+          <Button className="button-ghost" disabled={isBusy || isDeleting || isReordering} onClick={() => onDelete(track)}>
+            {isDeleting ? '제거 중' : '제거'}
+          </Button>
+        </div>
+      ) : null}
     </article>
+  )
+}
+
+function TrackArtwork({ track }) {
+  return (
+    <div className="track-cover" aria-hidden="true">
+      {track.albumImageUrl ? <img src={track.albumImageUrl} alt="" /> : <span>{track.title?.slice(0, 1) ?? 'T'}</span>}
+    </div>
+  )
+}
+
+function TrackText({ track }) {
+  return (
+    <div className="track-main">
+      <strong>{track.title}</strong>
+      <span>{track.artistName}</span>
+    </div>
   )
 }
 
