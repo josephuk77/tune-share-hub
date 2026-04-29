@@ -46,6 +46,28 @@ export function getLikedPlaylists({ page = 0, size = 100 } = {}) {
   return apiRequest(`/api/me/liked-playlists?${params.toString()}`)
 }
 
+export async function isPlaylistLiked(playlistId) {
+  const pageSize = 100
+  let page = 0
+
+  while (true) {
+    const likedPlaylists = await getLikedPlaylists({ page, size: pageSize })
+    if (!Array.isArray(likedPlaylists)) {
+      return false
+    }
+
+    if (likedPlaylists.some((playlist) => playlist.playlistId === Number(playlistId))) {
+      return true
+    }
+
+    if (likedPlaylists.length < pageSize) {
+      return false
+    }
+
+    page += 1
+  }
+}
+
 export function createPlaylistComment(playlistId, content) {
   return apiRequest(`/api/playlists/${playlistId}/comments`, {
     method: 'POST',

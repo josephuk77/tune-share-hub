@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   createPlaylistComment,
   deletePlaylistComment,
-  getLikedPlaylists,
   getPlaylist,
   getPlaylistComments,
   getPlaylistTracks,
   getSimilarPlaylists,
+  isPlaylistLiked,
   likePlaylist,
   unlikePlaylist,
 } from '../api/playlistApi.js'
@@ -41,12 +41,12 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setHasLiked(false)
 
       try {
-        const [playlist, tracks, comments, similarPlaylists, likedPlaylists] = await Promise.all([
+        const [playlist, tracks, comments, similarPlaylists, liked] = await Promise.all([
           getPlaylist(playlistId),
           getPlaylistTracks(playlistId).catch(() => []),
           getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
           getSimilarPlaylists(playlistId).catch(() => []),
-          currentUser ? getLikedPlaylists({ size: 100 }).catch(() => []) : Promise.resolve([]),
+          currentUser ? isPlaylistLiked(playlistId).catch(() => false) : Promise.resolve(false),
         ])
 
         if (!isActive) {
@@ -59,11 +59,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           comments: Array.isArray(comments) ? comments : [],
           similarPlaylists: Array.isArray(similarPlaylists) ? similarPlaylists : [],
         })
-        setHasLiked(
-          Array.isArray(likedPlaylists)
-            ? likedPlaylists.some((likedPlaylist) => likedPlaylist.playlistId === Number(playlistId))
-            : false,
-        )
+        setHasLiked(liked)
       } catch (error) {
         if (isActive) {
           setErrorMessage(error.message ?? '플레이리스트 상세를 불러오지 못했습니다.')
