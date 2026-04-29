@@ -11,3 +11,28 @@ export function getPublicPlaylists({ keyword = '', searchType = 'title', sort = 
 
   return apiRequest(`/api/playlists?${params.toString()}`, { skipAuth: true })
 }
+
+export function getPlaylist(playlistId) {
+  return apiRequest(`/api/playlists/${playlistId}`, { skipAuth: true })
+}
+
+export function getPlaylistTracks(playlistId) {
+  return apiRequest(`/api/playlists/${playlistId}/tracks`, { skipAuth: true })
+}
+
+export function getPlaylistComments(playlistId, { page = 0, size = 20 } = {}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  })
+
+  return apiRequest(`/api/playlists/${playlistId}/comments?${params.toString()}`, { skipAuth: true })
+}
+
+export function getSimilarPlaylists(playlistId, { size = 6 } = {}) {
+  const params = new URLSearchParams({
+    size: String(size),
+  })
+
+  return apiRequest(`/api/playlists/${playlistId}/similar?${params.toString()}`, { skipAuth: true })
+}
