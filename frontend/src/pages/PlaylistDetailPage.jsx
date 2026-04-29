@@ -24,9 +24,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       try {
         const [playlist, tracks, comments, similarPlaylists] = await Promise.all([
           getPlaylist(playlistId),
-          getPlaylistTracks(playlistId),
-          getPlaylistComments(playlistId, { size: 20 }),
-          getSimilarPlaylists(playlistId),
+          getPlaylistTracks(playlistId).catch(() => []),
+          getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
+          getSimilarPlaylists(playlistId).catch(() => []),
         ])
 
         if (!isActive) {
