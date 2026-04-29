@@ -19,6 +19,7 @@ export function AppShell({ children }) {
 
         <nav className="sidebar-nav">
           <a href="#public-playlists">공개 플레이리스트</a>
+          <a href="#playlist-builder">새 플레이리스트</a>
           <a href="#my-playlists">내 플레이리스트</a>
           <a href="#track-search">곡 검색</a>
         </nav>
