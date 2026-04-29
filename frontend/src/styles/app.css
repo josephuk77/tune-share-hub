@@ -590,6 +590,123 @@ a:focus-visible {
   gap: 6px;
 }
 
+.my-workspace {
+  display: grid;
+  gap: 16px;
+}
+
+.my-auth-panel {
+  display: grid;
+  min-height: 360px;
+  justify-items: center;
+}
+
+.my-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.my-summary-card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--color-surface);
+}
+
+.my-summary-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text);
+  font-size: 28px;
+}
+
+.my-summary-card span {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.my-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.my-panel {
+  min-height: 360px;
+}
+
+.my-list {
+  display: grid;
+  gap: 10px;
+}
+
+.my-activity-item {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  text-align: left;
+  cursor: pointer;
+}
+
+.my-activity-item:hover {
+  border-color: rgba(56, 189, 248, 0.62);
+}
+
+.my-activity-cover,
+.my-comment-mark {
+  display: grid;
+  overflow: hidden;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 8px;
+  color: #07110b;
+  background: var(--color-cyan);
+  font-weight: 800;
+}
+
+.my-comment-mark {
+  background: var(--color-green);
+}
+
+.my-activity-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-activity-main {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.my-activity-main strong,
+.my-activity-main span,
+.my-activity-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-activity-main span,
+.my-activity-main small {
+  color: var(--color-subtle);
+}
+
+.my-activity-main small {
+  font-size: 12px;
+}
+
 .detail-workspace {
   display: grid;
   gap: 16px;
@@ -921,11 +1038,14 @@ a:focus-visible {
   .dashboard-grid,
   .content-grid,
   .builder-grid,
+  .my-grid,
+  .my-summary-grid,
   .detail-grid,
   .detail-hero,
   .builder-search,
   .builder-track-card,
   .builder-selected-track,
+  .my-activity-item,
   .playlist-toolbar,
   .playlist-card,
   .similar-list,
