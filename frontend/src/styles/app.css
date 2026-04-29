@@ -15,6 +15,7 @@
 
 .button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 a:focus-visible {
   outline: 2px solid var(--color-cyan);
   outline-offset: 3px;
@@ -272,6 +273,10 @@ a:focus-visible {
   padding: 22px;
 }
 
+.panel-wide {
+  grid-column: 1 / -1;
+}
+
 .panel-header {
   display: flex;
   align-items: center;
@@ -290,6 +295,113 @@ a:focus-visible {
   color: var(--color-subtle);
   font-family: var(--font-mono);
   font-size: 12px;
+}
+
+.playlist-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 140px 140px 120px auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.playlist-toolbar label {
+  display: grid;
+  gap: 7px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.playlist-toolbar input,
+.playlist-toolbar select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+.panel-error {
+  margin: 0 0 14px;
+  color: var(--color-rose);
+  font-size: 14px;
+}
+
+.playlist-list {
+  display: grid;
+  gap: 12px;
+}
+
+.playlist-card {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--color-surface-raised);
+}
+
+.playlist-cover {
+  display: grid;
+  overflow: hidden;
+  width: 92px;
+  height: 92px;
+  place-items: center;
+  border-radius: 8px;
+  color: #07110b;
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.95), rgba(56, 189, 248, 0.78)),
+    var(--color-green);
+  font-weight: 800;
+}
+
+.playlist-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.playlist-content h3 {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.playlist-content p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.playlist-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--color-subtle);
+  font-size: 13px;
+}
+
+.list-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 .empty-state {
@@ -320,8 +432,16 @@ a:focus-visible {
   .login-panel,
   .app-shell,
   .dashboard-grid,
-  .content-grid {
+  .content-grid,
+  .playlist-toolbar,
+  .playlist-card {
     grid-template-columns: 1fr;
+  }
+
+  .playlist-cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 7;
   }
 
   .login-copy {
