@@ -29,6 +29,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [deletingCommentId, setDeletingCommentId] = useState(null)
   const [hasLiked, setHasLiked] = useState(false)
   const [isLikeSubmitting, setIsLikeSubmitting] = useState(false)
+  const currentUserId = currentUser?.userId
 
   useEffect(() => {
     let isActive = true
@@ -46,7 +47,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           getPlaylistTracks(playlistId).catch(() => []),
           getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
           getSimilarPlaylists(playlistId).catch(() => []),
-          currentUser ? isPlaylistLiked(playlistId).catch(() => false) : Promise.resolve(false),
+          currentUserId ? isPlaylistLiked(playlistId).catch(() => false) : Promise.resolve(false),
         ])
 
         if (!isActive) {
@@ -76,10 +77,10 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     return () => {
       isActive = false
     }
-  }, [currentUser, playlistId])
+  }, [currentUserId, playlistId])
 
   const { comments, playlist, similarPlaylists, tracks } = detail
-  const isOwner = currentUser?.userId === playlist?.userId
+  const isOwner = currentUserId === playlist?.userId
   const heroInitials = useMemo(() => playlist?.title?.slice(0, 2) || 'TS', [playlist?.title])
   const trimmedComment = commentContent.trim()
 
@@ -263,7 +264,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               <div className="panel detail-panel">
                 <div className="panel-header">
                   <h2>댓글</h2>
-                  <span>{comments.length} comments</span>
+                  <span>{formatCount(playlist.commentCount)} comments</span>
                 </div>
                 <form className="comment-form" onSubmit={handleCommentSubmit}>
                   <label htmlFor="playlist-comment">댓글 작성</label>

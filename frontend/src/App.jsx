@@ -46,11 +46,9 @@ function AppContent() {
         currentUser={user}
         onBack={() => {
           window.location.hash = 'public-playlists'
-          setHashState(getHashState())
         }}
         onSelectPlaylist={(playlistId) => {
           window.location.hash = `playlist/${playlistId}`
-          setHashState(getHashState())
         }}
         playlistId={hashState.selectedPlaylistId}
       />
@@ -61,7 +59,6 @@ function AppContent() {
     <HomePage
       onSelectPlaylist={(playlistId) => {
         window.location.hash = `playlist/${playlistId}`
-        setHashState(getHashState())
       }}
     />
   )
