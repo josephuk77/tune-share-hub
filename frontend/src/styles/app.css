@@ -349,6 +349,12 @@ a:focus-visible {
   font-size: 14px;
 }
 
+.panel-success {
+  margin: 0 0 14px;
+  color: var(--color-green);
+  font-size: 14px;
+}
+
 .playlist-list {
   display: grid;
   gap: 12px;

@@ -27,6 +27,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [errorMessage, setErrorMessage] = useState('')
   const [commentContent, setCommentContent] = useState('')
   const [actionMessage, setActionMessage] = useState('')
+  const [actionMessageType, setActionMessageType] = useState('error')
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false)
   const [deletingCommentId, setDeletingCommentId] = useState(null)
   const [hasLiked, setHasLiked] = useState(false)
@@ -46,7 +47,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setIsLoading(true)
       setErrorMessage('')
       setCommentContent('')
-      setActionMessage('')
+      clearActionMessage()
       setHasLiked(false)
       setIsEditingPlaylist(false)
 
@@ -97,18 +98,28 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const trimmedComment = commentContent.trim()
   const trimmedEditTitle = editTitle.trim()
 
+  function clearActionMessage() {
+    setActionMessage('')
+    setActionMessageType('error')
+  }
+
+  function showActionMessage(message, type = 'error') {
+    setActionMessage(message)
+    setActionMessageType(type)
+  }
+
   async function handleLikeToggle() {
     if (!playlist) {
       return
     }
 
     if (!currentUser) {
-      setActionMessage('좋아요를 남기려면 먼저 로그인해 주세요.')
+      showActionMessage('좋아요를 남기려면 먼저 로그인해 주세요.')
       return
     }
 
     setIsLikeSubmitting(true)
-    setActionMessage('')
+    clearActionMessage()
 
     try {
       const response = hasLiked ? await unlikePlaylist(playlist.playlistId) : await likePlaylist(playlist.playlistId)
@@ -117,7 +128,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
         likeCount: response.likeCount,
       })
     } catch (error) {
-      setActionMessage(error.message ?? '좋아요 상태를 변경하지 못했습니다.')
+      showActionMessage(error.message ?? '좋아요 상태를 변경하지 못했습니다.')
     } finally {
       setIsLikeSubmitting(false)
     }
@@ -131,7 +142,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     setEditTitle(playlist.title ?? '')
     setEditDescription(playlist.description ?? '')
     setEditPublicYn(Boolean(playlist.publicYn))
-    setActionMessage('')
+    clearActionMessage()
     setIsEditingPlaylist(true)
   }
 
@@ -143,7 +154,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     }
 
     setIsPlaylistSaving(true)
-    setActionMessage('')
+    clearActionMessage()
 
     try {
       const updatedPlaylist = await requestPlaylistUpdate(playlist.playlistId, {
@@ -158,9 +169,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
         title: trimmedEditTitle,
       })
       setIsEditingPlaylist(false)
-      setActionMessage('플레이리스트 정보를 수정했습니다.')
+      showActionMessage('플레이리스트 정보를 수정했습니다.', 'success')
     } catch (error) {
-      setActionMessage(error.message ?? '플레이리스트 정보를 수정하지 못했습니다.')
+      showActionMessage(error.message ?? '플레이리스트 정보를 수정하지 못했습니다.')
     } finally {
       setIsPlaylistSaving(false)
     }
@@ -172,13 +183,14 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     }
 
     setIsPlaylistDeleting(true)
-    setActionMessage('')
+    clearActionMessage()
 
     try {
       await deletePlaylist(playlist.playlistId)
+      setIsPlaylistDeleting(false)
       onBack()
     } catch (error) {
-      setActionMessage(error.message ?? '플레이리스트를 삭제하지 못했습니다.')
+      showActionMessage(error.message ?? '플레이리스트를 삭제하지 못했습니다.')
       setIsPlaylistDeleting(false)
     }
   }
@@ -191,12 +203,12 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     }
 
     if (!currentUser) {
-      setActionMessage('댓글을 작성하려면 먼저 로그인해 주세요.')
+      showActionMessage('댓글을 작성하려면 먼저 로그인해 주세요.')
       return
     }
 
     setIsCommentSubmitting(true)
-    setActionMessage('')
+    clearActionMessage()
 
     try {
       const createdComment = await createPlaylistComment(playlist.playlistId, trimmedComment)
@@ -212,7 +224,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       }))
       setCommentContent('')
     } catch (error) {
-      setActionMessage(error.message ?? '댓글을 등록하지 못했습니다.')
+      showActionMessage(error.message ?? '댓글을 등록하지 못했습니다.')
     } finally {
       setIsCommentSubmitting(false)
     }
@@ -224,7 +236,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     }
 
     setDeletingCommentId(commentId)
-    setActionMessage('')
+    clearActionMessage()
 
     try {
       await deletePlaylistComment(commentId)
@@ -239,7 +251,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
         comments: currentDetail.comments.filter((comment) => comment.commentId !== commentId),
       }))
     } catch (error) {
-      setActionMessage(error.message ?? '댓글을 삭제하지 못했습니다.')
+      showActionMessage(error.message ?? '댓글을 삭제하지 못했습니다.')
     } finally {
       setDeletingCommentId(null)
     }
@@ -325,7 +337,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               </div>
             </section>
 
-            {actionMessage ? <p className="panel-error detail-action-message">{actionMessage}</p> : null}
+            {actionMessage ? (
+              <p className={`${actionMessageType === 'success' ? 'panel-success' : 'panel-error'} detail-action-message`}>{actionMessage}</p>
+            ) : null}
 
             {isOwner && isEditingPlaylist ? (
               <section className="panel detail-edit-panel">
