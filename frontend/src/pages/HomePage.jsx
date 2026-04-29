@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AppShell } from '../components/layout/AppShell.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
-import { getPublicPlaylists } from '../api/playlistApi.js'
+import { getPublicPlaylists, searchSpotifyTracks } from '../api/playlistApi.js'
 import { useAuth } from '../hooks/useAuth.js'
 
 const dashboardItems = [
@@ -58,6 +58,21 @@ export function HomePage({ onSelectPlaylist }) {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [trackSearchInput, setTrackSearchInput] = useState('')
+  const [trackResults, setTrackResults] = useState([])
+  const [isTrackSearching, setIsTrackSearching] = useState(false)
+  const [trackSearchMessage, setTrackSearchMessage] = useState('')
+  const trackSearchRequestRef = useRef(0)
+  const isMountedRef = useRef(false)
+
+  useEffect(() => {
+    isMountedRef.current = true
+
+    return () => {
+      isMountedRef.current = false
+      trackSearchRequestRef.current += 1
+    }
+  }, [])
 
   useEffect(() => {
     let isActive = true
@@ -120,6 +135,44 @@ export function HomePage({ onSelectPlaylist }) {
       ...current,
       [name]: filterValueParsers[name]?.(value) ?? value,
     }))
+  }
+
+  async function handleTrackSearchSubmit(event) {
+    event.preventDefault()
+    const query = trackSearchInput.trim()
+
+    if (!query) {
+      setTrackSearchMessage('검색어를 입력해 주세요.')
+      return
+    }
+
+    setIsTrackSearching(true)
+    setTrackSearchMessage('')
+    const requestId = trackSearchRequestRef.current + 1
+    trackSearchRequestRef.current = requestId
+
+    try {
+      const response = await searchSpotifyTracks({ query, size: 8 })
+      if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
+        return
+      }
+
+      const tracks = Array.isArray(response.tracks) ? response.tracks : []
+      setTrackResults(tracks)
+      if (tracks.length === 0) {
+        setTrackSearchMessage('검색 결과가 없습니다.')
+      }
+    } catch (error) {
+      if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
+        return
+      }
+
+      setTrackSearchMessage(error.message ?? '곡 검색에 실패했습니다.')
+    } finally {
+      if (isMountedRef.current && trackSearchRequestRef.current === requestId) {
+        setIsTrackSearching(false)
+      }
+    }
   }
 
   return (
@@ -243,6 +296,37 @@ export function HomePage({ onSelectPlaylist }) {
               </a>
             </div>
           </div>
+
+          <div id="track-search" className="panel">
+            <div className="panel-header">
+              <h2>Spotify 곡 검색</h2>
+              <span>{trackResults.length} results</span>
+            </div>
+
+            <form className="home-track-search" onSubmit={handleTrackSearchSubmit}>
+              <input
+                onChange={(event) => setTrackSearchInput(event.target.value)}
+                placeholder="곡명 또는 아티스트 검색"
+                type="search"
+                value={trackSearchInput}
+              />
+              <Button className="button-secondary" disabled={isTrackSearching} type="submit">
+                {isTrackSearching ? '검색 중' : '검색'}
+              </Button>
+            </form>
+
+            {trackSearchMessage ? <p className="panel-error">{trackSearchMessage}</p> : null}
+
+            {trackResults.length > 0 ? (
+              <div className="home-track-list" aria-live="polite">
+                {trackResults.map((track) => (
+                  <TrackSearchItem key={track.spotifyTrackId} track={track} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState title="검색 결과가 없습니다" description="Spotify 카탈로그에서 곡과 아티스트를 찾아볼 수 있습니다." />
+            )}
+          </div>
         </section>
       </main>
     </AppShell>
@@ -281,6 +365,35 @@ function PlaylistCard({ onSelectPlaylist, playlist }) {
   )
 }
 
+function TrackSearchItem({ track }) {
+  return (
+    <article className="home-track-item">
+      <div className="home-track-cover" aria-hidden="true">
+        {track.albumImageUrl ? <img src={track.albumImageUrl} alt="" /> : <span>{track.title?.slice(0, 1) ?? 'T'}</span>}
+      </div>
+      <div className="home-track-main">
+        <strong>{track.title}</strong>
+        <span>{track.artistName}</span>
+        <small>
+          {track.albumName || '앨범 정보 없음'} · {formatDuration(track.durationMs)}
+        </small>
+      </div>
+      {track.spotifyUrl ? (
+        <a className="button button-ghost" href={track.spotifyUrl} rel="noreferrer" target="_blank">
+          Spotify
+        </a>
+      ) : null}
+    </article>
+  )
+}
+
 function formatCount(value) {
   return Number(value ?? 0).toLocaleString('ko-KR')
+}
+
+function formatDuration(durationMs) {
+  const totalSeconds = Math.floor(Number(durationMs ?? 0) / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = String(totalSeconds % 60).padStart(2, '0')
+  return `${minutes}:${seconds}`
 }
