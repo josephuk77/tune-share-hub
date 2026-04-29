@@ -13,11 +13,11 @@ export function getPublicPlaylists({ keyword = '', searchType = 'title', sort = 
 }
 
 export function getPlaylist(playlistId) {
-  return apiRequest(`/api/playlists/${playlistId}`, { skipAuth: true })
+  return apiRequest(`/api/playlists/${playlistId}`)
 }
 
 export function getPlaylistTracks(playlistId) {
-  return apiRequest(`/api/playlists/${playlistId}/tracks`, { skipAuth: true })
+  return apiRequest(`/api/playlists/${playlistId}/tracks`)
 }
 
 export function getPlaylistComments(playlistId, { page = 0, size = 20 } = {}) {
@@ -26,7 +26,7 @@ export function getPlaylistComments(playlistId, { page = 0, size = 20 } = {}) {
     size: String(size),
   })
 
-  return apiRequest(`/api/playlists/${playlistId}/comments?${params.toString()}`, { skipAuth: true })
+  return apiRequest(`/api/playlists/${playlistId}/comments?${params.toString()}`)
 }
 
 export function getSimilarPlaylists(playlistId, { size = 6 } = {}) {
@@ -34,5 +34,5 @@ export function getSimilarPlaylists(playlistId, { size = 6 } = {}) {
     size: String(size),
   })
 
-  return apiRequest(`/api/playlists/${playlistId}/similar?${params.toString()}`, { skipAuth: true })
+  return apiRequest(`/api/playlists/${playlistId}/similar?${params.toString()}`)
 }
