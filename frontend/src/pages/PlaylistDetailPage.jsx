@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   createPlaylistComment,
   deletePlaylistComment,
+  getLikedPlaylists,
   getPlaylist,
   getPlaylistComments,
   getPlaylistTracks,
@@ -40,11 +41,12 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setHasLiked(false)
 
       try {
-        const [playlist, tracks, comments, similarPlaylists] = await Promise.all([
+        const [playlist, tracks, comments, similarPlaylists, likedPlaylists] = await Promise.all([
           getPlaylist(playlistId),
           getPlaylistTracks(playlistId).catch(() => []),
           getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
           getSimilarPlaylists(playlistId).catch(() => []),
+          currentUser ? getLikedPlaylists({ size: 100 }).catch(() => []) : Promise.resolve([]),
         ])
 
         if (!isActive) {
@@ -57,6 +59,11 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           comments: Array.isArray(comments) ? comments : [],
           similarPlaylists: Array.isArray(similarPlaylists) ? similarPlaylists : [],
         })
+        setHasLiked(
+          Array.isArray(likedPlaylists)
+            ? likedPlaylists.some((likedPlaylist) => likedPlaylist.playlistId === Number(playlistId))
+            : false,
+        )
       } catch (error) {
         if (isActive) {
           setErrorMessage(error.message ?? '플레이리스트 상세를 불러오지 못했습니다.')
@@ -73,7 +80,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
     return () => {
       isActive = false
     }
-  }, [playlistId])
+  }, [currentUser, playlistId])
 
   const { comments, playlist, similarPlaylists, tracks } = detail
   const isOwner = currentUser?.userId === playlist?.userId

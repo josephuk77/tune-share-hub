@@ -37,6 +37,15 @@ export function getSimilarPlaylists(playlistId, { size = 6 } = {}) {
   return apiRequest(`/api/playlists/${playlistId}/similar?${params.toString()}`)
 }
 
+export function getLikedPlaylists({ page = 0, size = 100 } = {}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  })
+
+  return apiRequest(`/api/me/liked-playlists?${params.toString()}`)
+}
+
 export function createPlaylistComment(playlistId, content) {
   return apiRequest(`/api/playlists/${playlistId}/comments`, {
     method: 'POST',
