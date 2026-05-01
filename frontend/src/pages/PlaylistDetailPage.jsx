@@ -15,6 +15,7 @@ import {
   reorderPlaylistTracks,
   searchSpotifyTracks,
   unlikePlaylist,
+  updatePlaylistComment,
   updatePlaylist as requestPlaylistUpdate,
 } from '../api/playlistApi.js'
 import { Button } from '../components/common/Button.jsx'
@@ -35,6 +36,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [actionMessageType, setActionMessageType] = useState('error')
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false)
   const [deletingCommentId, setDeletingCommentId] = useState(null)
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [commentEditContent, setCommentEditContent] = useState('')
+  const [updatingCommentId, setUpdatingCommentId] = useState(null)
   const [hasLiked, setHasLiked] = useState(false)
   const [isLikeSubmitting, setIsLikeSubmitting] = useState(false)
   const [isEditingPlaylist, setIsEditingPlaylist] = useState(false)
@@ -74,6 +78,8 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setIsLoading(true)
       setErrorMessage('')
       setCommentContent('')
+      setCommentEditContent('')
+      setEditingCommentId(null)
       clearActionMessage()
       clearTrackMessage()
       setTrackSearchQuery('')
@@ -329,10 +335,51 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           : currentDetail.playlist,
         comments: currentDetail.comments.filter((comment) => comment.commentId !== commentId),
       }))
+      if (editingCommentId === commentId) {
+        setEditingCommentId(null)
+        setCommentEditContent('')
+      }
     } catch (error) {
       showActionMessage(error.message ?? '댓글을 삭제하지 못했습니다.')
     } finally {
       setDeletingCommentId(null)
+    }
+  }
+
+  function handleCommentEditStart(comment) {
+    setEditingCommentId(comment.commentId)
+    setCommentEditContent(comment.content ?? '')
+    clearActionMessage()
+  }
+
+  function handleCommentEditCancel() {
+    setEditingCommentId(null)
+    setCommentEditContent('')
+  }
+
+  async function handleCommentUpdate(event, commentId) {
+    event.preventDefault()
+    const trimmedEditContent = commentEditContent.trim()
+    if (!trimmedEditContent) {
+      return
+    }
+
+    setUpdatingCommentId(commentId)
+    clearActionMessage()
+
+    try {
+      const updatedComment = await updatePlaylistComment(commentId, trimmedEditContent)
+      setDetail((currentDetail) => ({
+        ...currentDetail,
+        comments: currentDetail.comments.map((comment) => (comment.commentId === commentId ? updatedComment : comment)),
+      }))
+      setEditingCommentId(null)
+      setCommentEditContent('')
+      showActionMessage('댓글을 수정했습니다.', 'success')
+    } catch (error) {
+      showActionMessage(error.message ?? '댓글을 수정하지 못했습니다.')
+    } finally {
+      setUpdatingCommentId(null)
     }
   }
 
@@ -653,10 +700,17 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
                     {comments.map((comment) => (
                       <CommentItem
                         comment={comment}
+                        commentEditContent={commentEditContent}
                         currentUser={currentUser}
                         deletingCommentId={deletingCommentId}
+                        editingCommentId={editingCommentId}
                         key={comment.commentId}
                         onDelete={handleCommentDelete}
+                        onEditCancel={handleCommentEditCancel}
+                        onEditChange={setCommentEditContent}
+                        onEditStart={handleCommentEditStart}
+                        onUpdate={handleCommentUpdate}
+                        updatingCommentId={updatingCommentId}
                       />
                     ))}
                   </div>
@@ -765,24 +819,70 @@ function TrackText({ track }) {
   )
 }
 
-function CommentItem({ comment, currentUser, deletingCommentId, onDelete }) {
+function CommentItem({
+  comment,
+  commentEditContent,
+  currentUser,
+  deletingCommentId,
+  editingCommentId,
+  onDelete,
+  onEditCancel,
+  onEditChange,
+  onEditStart,
+  onUpdate,
+  updatingCommentId,
+}) {
   const isCommentOwner = currentUser?.userId === comment.userId
   const isDeleting = deletingCommentId === comment.commentId
+  const isEditing = editingCommentId === comment.commentId
+  const isUpdating = updatingCommentId === comment.commentId
+  const trimmedEditContent = commentEditContent.trim()
+  const isEditUnchanged = trimmedEditContent === (comment.content ?? '').trim()
 
   return (
     <article className="comment-item">
-      <div>
-        <div>
+      <div className="comment-header">
+        <div className="comment-meta">
           <strong>{comment.userNickname}</strong>
-          <span>{formatDate(comment.createdAt)}</span>
+          <span>
+            {formatDate(comment.createdAt)}
+            {comment.updatedAt ? ` · 수정 ${formatDate(comment.updatedAt)}` : ''}
+          </span>
         </div>
         {isCommentOwner ? (
-          <Button className="button-ghost comment-delete-button" disabled={isDeleting} onClick={() => onDelete(comment.commentId)}>
-            {isDeleting ? '삭제 중' : '삭제'}
-          </Button>
+          <div className="comment-actions">
+            <Button className="button-ghost" disabled={isDeleting || isEditing} onClick={() => onEditStart(comment)}>
+              수정
+            </Button>
+            <Button className="button-ghost" disabled={isDeleting || isUpdating} onClick={() => onDelete(comment.commentId)}>
+              {isDeleting ? '삭제 중' : '삭제'}
+            </Button>
+          </div>
         ) : null}
       </div>
-      <p>{comment.content}</p>
+      {isEditing ? (
+        <form className="comment-edit-form" onSubmit={(event) => onUpdate(event, comment.commentId)}>
+          <textarea
+            maxLength={1000}
+            onChange={(event) => onEditChange(event.target.value)}
+            rows={4}
+            value={commentEditContent}
+          />
+          <div className="comment-form-actions">
+            <span>{commentEditContent.trim().length}/1000</span>
+            <div className="comment-actions">
+              <Button className="button-secondary" disabled={isUpdating} onClick={onEditCancel}>
+                취소
+              </Button>
+              <Button disabled={isUpdating || !trimmedEditContent || isEditUnchanged} type="submit">
+                {isUpdating ? '저장 중' : '저장'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      ) : (
+        <p>{comment.content}</p>
+      )}
     </article>
   )
 }

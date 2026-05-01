@@ -166,6 +166,13 @@ export function deletePlaylistComment(commentId) {
   })
 }
 
+export function updatePlaylistComment(commentId, content) {
+  return apiRequest(`/api/comments/${commentId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ content }),
+  })
+}
+
 export function likePlaylist(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}/likes`, {
     method: 'POST',
