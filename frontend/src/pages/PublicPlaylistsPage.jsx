@@ -135,13 +135,13 @@ export function PublicPlaylistsPage({ onSelectPlaylist }) {
         <section className="workspace-header">
           <div>
             <p className="eyebrow">Explore</p>
-            <h1>공개 플레이리스트</h1>
+            <h1>플레이리스트 탐색</h1>
           </div>
           <span className="status-pill">{isAuthenticated ? '세션 활성' : '둘러보기'}</span>
         </section>
 
-        <section className="content-grid page-grid">
-          <div id="public-playlists" className="panel panel-wide">
+        <section className="content-grid page-grid discovery-grid">
+          <div id="public-playlists" className="panel playlist-results-panel">
             <div className="panel-header">
               <h2>탐색 목록</h2>
               <span>{activeFilterLabel}</span>
@@ -226,7 +226,7 @@ export function PublicPlaylistsPage({ onSelectPlaylist }) {
             )}
           </div>
 
-          <div id="playlist-rankings" className="panel">
+          <div id="playlist-rankings" className="panel ranking-panel">
             <div className="panel-header">
               <h2>인기 랭킹</h2>
               <span>좋아요+댓글</span>
