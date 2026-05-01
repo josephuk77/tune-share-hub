@@ -675,6 +675,7 @@ a:focus-visible {
 .builder-track-source,
 .track-source {
   width: fit-content;
+  max-width: 100%;
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 700;

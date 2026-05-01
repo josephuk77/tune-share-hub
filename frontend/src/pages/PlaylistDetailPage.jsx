@@ -872,7 +872,7 @@ function TrackText({ track }) {
       <strong>{track.title}</strong>
       <span>{track.artistName}</span>
       {track.spotifyUrl ? (
-        <a className="track-source" href={track.spotifyUrl} rel="noreferrer" target="_blank">
+        <a className="track-source" href={track.spotifyUrl} rel="noopener noreferrer" target="_blank">
           Spotify에서 보기
         </a>
       ) : null}
