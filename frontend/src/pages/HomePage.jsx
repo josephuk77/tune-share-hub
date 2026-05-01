@@ -157,7 +157,7 @@ export function HomePage({ onSelectPlaylist }) {
         return
       }
 
-      const tracks = Array.isArray(response.items) ? response.items : []
+      const tracks = Array.isArray(response.tracks) ? response.tracks : []
       setTrackResults(tracks)
     } catch (error) {
       if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {

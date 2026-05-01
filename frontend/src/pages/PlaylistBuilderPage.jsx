@@ -31,9 +31,6 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
       const response = await searchSpotifyTracks({ query })
       const tracks = Array.isArray(response.tracks) ? response.tracks : []
       setSearchResults(tracks)
-      if (tracks.length === 0) {
-        setSearchMessage('검색 결과가 없습니다.')
-      }
     } catch (error) {
       setSearchMessage(error.message ?? '곡 검색에 실패했습니다.')
     } finally {
@@ -175,7 +172,7 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
             <div className="panel builder-panel">
               <div className="panel-header">
                 <h2>Spotify 곡 검색</h2>
-                <span>{searchResults.length} results</span>
+                <span>{searchResults.length}개의 결과</span>
               </div>
 
               <form className="builder-search" onSubmit={handleSearchSubmit}>
@@ -211,7 +208,7 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
             <div className="panel builder-panel builder-selected-panel">
               <div className="panel-header">
                 <h2>담은 곡</h2>
-                <span>{selectedTracks.length} tracks</span>
+                <span>{selectedTracks.length}곡</span>
               </div>
 
               {selectedTracks.length > 0 ? (

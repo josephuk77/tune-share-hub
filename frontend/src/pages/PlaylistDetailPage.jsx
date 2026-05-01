@@ -568,7 +568,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               <div className="panel detail-panel">
                 <div className="panel-header">
                   <h2>수록곡</h2>
-                  <span>{tracks.length} tracks</span>
+                  <span>{tracks.length}곡</span>
                 </div>
                 {isOwner ? (
                   <div className="track-manager">
@@ -629,7 +629,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
               <div className="panel detail-panel">
                 <div className="panel-header">
                   <h2>댓글</h2>
-                  <span>{formatCount(playlist.commentCount)} comments</span>
+                  <span>{formatCount(playlist.commentCount)}개</span>
                 </div>
                 <form className="comment-form" onSubmit={handleCommentSubmit}>
                   <label htmlFor="playlist-comment">댓글 작성</label>
@@ -669,7 +669,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
             <section className="panel detail-panel">
               <div className="panel-header">
                 <h2>유사 플레이리스트</h2>
-                <span>{similarPlaylists.length} similar</span>
+                <span>{similarPlaylists.length}개</span>
               </div>
               {similarPlaylists.length > 0 ? (
                 <div className="similar-list">
