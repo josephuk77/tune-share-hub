@@ -91,6 +91,16 @@ class JwtInterceptorTest {
     }
 
     @Test
+    void healthDoesNotRequireToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/health");
+
+        boolean result = jwtInterceptor.preHandle(request, response, handler);
+
+        assertThat(result).isTrue();
+        verify(jwtProvider, never()).parseAccessToken(anyString());
+    }
+
+    @Test
     void malformedPublicPlaylistPathStillRequiresToken() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/latest");
 

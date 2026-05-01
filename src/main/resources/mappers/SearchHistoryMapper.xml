@@ -14,18 +14,30 @@
     </resultMap>
 
     <insert id="insert" parameterType="com.tunesharehub.entity.SearchHistory">
-        <selectKey keyProperty="searchHistoryId" resultType="long" order="BEFORE">
-            SELECT SEQ_SEARCH_HISTORIES.NEXTVAL FROM DUAL
-        </selectKey>
-        INSERT INTO SEARCH_HISTORIES (
-            SEARCH_HISTORY_ID,
-            USER_ID,
-            SEARCH_QUERY
-        ) VALUES (
-            #{searchHistoryId},
-            #{userId},
-            #{query}
+        MERGE INTO SEARCH_HISTORIES target
+        USING (
+            SELECT
+                #{userId} AS USER_ID,
+                #{query} AS SEARCH_QUERY
+            FROM DUAL
+        ) source
+        ON (
+            target.USER_ID = source.USER_ID
+            AND target.SEARCH_QUERY = source.SEARCH_QUERY
+            AND target.DELETED_AT IS NULL
         )
+        WHEN MATCHED THEN
+            UPDATE SET target.CREATED_AT = SYSTIMESTAMP
+        WHEN NOT MATCHED THEN
+            INSERT (
+                SEARCH_HISTORY_ID,
+                USER_ID,
+                SEARCH_QUERY
+            ) VALUES (
+                SEQ_SEARCH_HISTORIES.NEXTVAL,
+                source.USER_ID,
+                source.SEARCH_QUERY
+            )
     </insert>
 
     <select id="findByUserId" resultMap="searchHistoryResultMap">
@@ -35,9 +47,22 @@
             SEARCH_QUERY,
             CREATED_AT,
             DELETED_AT
-        FROM SEARCH_HISTORIES
-        WHERE USER_ID = #{userId}
-          AND DELETED_AT IS NULL
+        FROM (
+            SELECT
+                SEARCH_HISTORY_ID,
+                USER_ID,
+                SEARCH_QUERY,
+                CREATED_AT,
+                DELETED_AT,
+                ROW_NUMBER() OVER (
+                    PARTITION BY SEARCH_QUERY
+                    ORDER BY CREATED_AT DESC, SEARCH_HISTORY_ID DESC
+                ) AS rn
+            FROM SEARCH_HISTORIES
+            WHERE USER_ID = #{userId}
+              AND DELETED_AT IS NULL
+        )
+        WHERE rn = 1
         ORDER BY CREATED_AT DESC, SEARCH_HISTORY_ID DESC
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>

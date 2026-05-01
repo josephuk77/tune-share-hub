@@ -1,6 +1,7 @@
 package com.tunesharehub.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +37,20 @@ class SpotifyServiceTest {
         TrackSearchResponse result = spotifyService.searchTracks(1L, "  iu  ", 0, 10);
 
         verify(spotifyClient).searchTracks("iu", 10, 0);
+        verify(searchHistoryService).recordSearch(1L, "iu");
+        assertThat(result.query()).isEqualTo("iu");
+    }
+
+    @Test
+    void searchTracksReturnsResultWhenHistorySaveFails() {
+        SpotifySearchResponse response = new SpotifySearchResponse(
+                new SpotifySearchResponse.TrackPage(null, 0, List.of())
+        );
+        when(spotifyClient.searchTracks("iu", 10, 0)).thenReturn(response);
+        doThrow(new RuntimeException("db down")).when(searchHistoryService).recordSearch(1L, "iu");
+
+        TrackSearchResponse result = spotifyService.searchTracks(1L, "iu", 0, 10);
+
         verify(searchHistoryService).recordSearch(1L, "iu");
         assertThat(result.query()).isEqualTo("iu");
     }

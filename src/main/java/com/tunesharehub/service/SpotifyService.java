@@ -7,10 +7,14 @@ import com.tunesharehub.spotify.SpotifyClient;
 import com.tunesharehub.spotify.SpotifySearchResponse;
 import com.tunesharehub.spotify.SpotifyTrack;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SpotifyService {
+
+    private static final Logger log = LoggerFactory.getLogger(SpotifyService.class);
 
     private final SpotifyClient spotifyClient;
     private final SearchHistoryService searchHistoryService;
@@ -42,7 +46,7 @@ public class SpotifyService {
                 .map(this::toTrackSearchItemResponse)
                 .toList();
 
-        searchHistoryService.recordSearch(userId, normalizedQuery);
+        recordSearchHistory(userId, normalizedQuery);
 
         return new TrackSearchResponse(
                 normalizedQuery,
@@ -52,6 +56,14 @@ public class SpotifyService {
                 tracks.next() != null,
                 items
         );
+    }
+
+    private void recordSearchHistory(Long userId, String normalizedQuery) {
+        try {
+            searchHistoryService.recordSearch(userId, normalizedQuery);
+        } catch (RuntimeException exception) {
+            log.warn("Failed to record Spotify search history. userId={}, query={}", userId, normalizedQuery, exception);
+        }
     }
 
     private TrackSearchItemResponse toTrackSearchItemResponse(SpotifyTrack track) {
