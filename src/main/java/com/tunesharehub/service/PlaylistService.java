@@ -20,6 +20,7 @@ public class PlaylistService {
     private static final String PUBLIC_YN_TRUE = "Y";
     private static final String PUBLIC_YN_FALSE = "N";
     private static final String SEARCH_TYPE_TITLE = "title";
+    private static final String SEARCH_TYPE_DESCRIPTION = "description";
     private static final String SEARCH_TYPE_AUTHOR = "author";
     private static final String SORT_LATEST = "latest";
     private static final String SORT_VIEW = "view";
@@ -282,6 +283,9 @@ public class PlaylistService {
         String normalizedSearchType = searchType.trim().toLowerCase(Locale.ROOT);
         if (SEARCH_TYPE_AUTHOR.equals(normalizedSearchType)) {
             return SEARCH_TYPE_AUTHOR;
+        }
+        if (SEARCH_TYPE_DESCRIPTION.equals(normalizedSearchType)) {
+            return SEARCH_TYPE_DESCRIPTION;
         }
         if (SEARCH_TYPE_TITLE.equals(normalizedSearchType)) {
             return SEARCH_TYPE_TITLE;

@@ -28,6 +28,7 @@ const dashboardItems = [
 
 const searchTypeOptions = [
   { value: 'title', label: '제목' },
+  { value: 'description', label: '설명' },
   { value: 'author', label: '작성자' },
 ]
 
