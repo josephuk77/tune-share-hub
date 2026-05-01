@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '../components/common/Button.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 
-export function LoginPage() {
+export function LoginPage({ onClose }) {
   const { errorMessage, login, setErrorMessage } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,6 +25,9 @@ export function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
+        <button className="login-close" onClick={onClose} type="button" aria-label="로그인 닫기">
+          X
+        </button>
         <div className="login-copy">
           <div className="brand-mark" aria-hidden="true">
             TS

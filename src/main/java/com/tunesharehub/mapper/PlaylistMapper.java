@@ -30,6 +30,11 @@ public interface PlaylistMapper {
             @Param("size") int size
     );
 
+    List<Playlist> findPublicPlaylistRankings(
+            @Param("metric") String metric,
+            @Param("size") int size
+    );
+
     List<Playlist> findLikedByUserId(
             @Param("userId") Long userId,
             @Param("offset") int offset,

@@ -108,7 +108,7 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
   }
 
   return (
-    <AppShell>
+    <AppShell activePage="playlist-builder">
       <main className="workspace builder-workspace">
         <section className="workspace-header">
           <div>
