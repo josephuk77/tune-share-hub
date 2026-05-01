@@ -2,10 +2,10 @@ import { Button } from '../common/Button.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
 
 const navItems = [
-  { href: '#public-playlists', id: 'public-playlists', label: '공개 플레이리스트' },
-  { href: '#track-search', id: 'track-search', label: '곡 검색' },
-  { href: '#playlist-builder', id: 'playlist-builder', label: '새 플레이리스트' },
-  { href: '#my-playlists', id: 'my-playlists', label: '내 플레이리스트' },
+  { code: '01', href: '#public-playlists', id: 'public-playlists', label: '공개 플레이리스트' },
+  { code: '02', href: '#track-search', id: 'track-search', label: '곡 검색' },
+  { code: '03', href: '#playlist-builder', id: 'playlist-builder', label: '새 플레이리스트' },
+  { code: '04', href: '#my-playlists', id: 'my-playlists', label: '내 플레이리스트' },
 ]
 
 export function AppShell({ activePage, children }) {
@@ -32,7 +32,10 @@ export function AppShell({ activePage, children }) {
               href={item.href}
               key={item.id}
             >
-              {item.label}
+              <span className="nav-code" aria-hidden="true">
+                {item.code}
+              </span>
+              <span>{item.label}</span>
             </a>
           ))}
         </nav>

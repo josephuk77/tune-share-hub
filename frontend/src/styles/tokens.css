@@ -1,16 +1,16 @@
 :root {
-  --color-background: #0f1110;
-  --color-surface: #171916;
-  --color-surface-raised: #20231f;
-  --color-surface-soft: #121411;
-  --color-border: #343a33;
-  --color-text: #f7f7ef;
-  --color-muted: #b8bbae;
-  --color-subtle: #81877d;
-  --color-green: #5ee083;
-  --color-cyan: #67d8e6;
-  --color-rose: #ff7a90;
-  --color-amber: #f6c453;
+  --color-background: #080b0a;
+  --color-surface: #111612;
+  --color-surface-raised: #192019;
+  --color-surface-soft: #0d110f;
+  --color-border: #2c372f;
+  --color-text: #f8fbf3;
+  --color-muted: #c1c8bb;
+  --color-subtle: #7f8a80;
+  --color-green: #66f08a;
+  --color-cyan: #6ae4ff;
+  --color-rose: #ff7f9b;
+  --color-amber: #f7cd65;
   --color-accent: var(--color-green);
   --shadow-panel: 0 22px 70px rgba(0, 0, 0, 0.34);
   --font-sans:
@@ -35,8 +35,9 @@ body {
   min-width: 320px;
   margin: 0;
   background:
-    linear-gradient(180deg, rgba(246, 196, 83, 0.04), transparent 260px),
-    linear-gradient(180deg, #151711 0%, var(--color-background) 42%, #0b0d0c 100%);
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 96px),
+    linear-gradient(135deg, rgba(106, 228, 255, 0.06), transparent 36%),
+    linear-gradient(180deg, #11170f 0%, var(--color-background) 44%, #050706 100%);
 }
 
 button,
