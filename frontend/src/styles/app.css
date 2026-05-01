@@ -656,7 +656,8 @@ a:focus-visible {
 
 .builder-track-text strong,
 .builder-track-text span,
-.builder-track-text small {
+.builder-track-text small,
+.builder-track-source {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -669,6 +670,21 @@ a:focus-visible {
 
 .builder-track-text small {
   font-size: 12px;
+}
+
+.builder-track-source,
+.track-source {
+  width: fit-content;
+  max-width: 100%;
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.builder-track-source:hover,
+.track-source:hover {
+  text-decoration: underline;
 }
 
 .builder-track-actions {
@@ -1069,7 +1085,8 @@ a:focus-visible {
 }
 
 .track-main strong,
-.track-album {
+.track-album,
+.track-source {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

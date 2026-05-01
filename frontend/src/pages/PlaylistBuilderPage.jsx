@@ -285,6 +285,11 @@ function TrackText({ track }) {
       <small>
         {track.albumName || '앨범 정보 없음'} · {formatDuration(track.durationMs)}
       </small>
+      {track.spotifyUrl ? (
+        <a className="builder-track-source" href={track.spotifyUrl} rel="noopener noreferrer" target="_blank">
+          Spotify에서 보기
+        </a>
+      ) : null}
     </div>
   )
 }
