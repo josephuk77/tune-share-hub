@@ -77,6 +77,27 @@ class PlaylistServiceTest {
     }
 
     @Test
+    void getPublicPlaylistRankingsNormalizesBlankMetric() {
+        Playlist playlist = publicPlaylist();
+        when(playlistMapper.findPublicPlaylistRankings("reaction", 5)).thenReturn(List.of(playlist));
+
+        List<PlaylistResponse> responses = playlistService.getPublicPlaylistRankings("  ", 5);
+
+        verify(playlistMapper).findPublicPlaylistRankings("reaction", 5);
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).playlistId()).isEqualTo(10L);
+    }
+
+    @Test
+    void getPublicPlaylistRankingsAcceptsLikeMetric() {
+        when(playlistMapper.findPublicPlaylistRankings("like", 10)).thenReturn(List.of());
+
+        playlistService.getPublicPlaylistRankings(" LIKE ", 10);
+
+        verify(playlistMapper).findPublicPlaylistRankings("like", 10);
+    }
+
+    @Test
     void getSimilarPlaylistsValidatesReadablePlaylistAndReturnsSimilarPublicPlaylists() {
         Playlist sourcePlaylist = publicPlaylist();
         Playlist similarPlaylist = publicPlaylist();
@@ -143,6 +164,13 @@ class PlaylistServiceTest {
         assertThatThrownBy(() -> playlistService.getPublicPlaylists("", "title", "popular", 0, 20))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("정렬 값이 올바르지 않습니다.");
+    }
+
+    @Test
+    void getPublicPlaylistRankingsRejectsInvalidMetric() {
+        assertThatThrownBy(() -> playlistService.getPublicPlaylistRankings("copy", 5))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("랭킹 기준이 올바르지 않습니다.");
     }
 
     @Test

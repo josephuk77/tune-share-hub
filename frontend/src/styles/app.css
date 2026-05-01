@@ -241,7 +241,7 @@ a:focus-visible {
 }
 
 .dashboard-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 28px;
 }
 
@@ -280,6 +280,10 @@ a:focus-visible {
 
 .dashboard-card.rose span {
   color: var(--color-rose);
+}
+
+.dashboard-card.amber span {
+  color: #fbbf24;
 }
 
 .content-grid {
@@ -439,6 +443,63 @@ a:focus-visible {
 .panel-actions {
   display: flex;
   margin-top: 16px;
+}
+
+.ranking-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ranking-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  text-decoration: none;
+}
+
+.ranking-item:hover {
+  border-color: rgba(251, 191, 36, 0.66);
+}
+
+.ranking-number {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  color: #11100a;
+  background: #fbbf24;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.ranking-main {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.ranking-main strong,
+.ranking-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-main small {
+  color: var(--color-subtle);
+}
+
+.ranking-score {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
 }
 
 .home-track-search {

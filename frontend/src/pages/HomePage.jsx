@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppShell } from '../components/layout/AppShell.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
-import { getMySearchHistories, getPublicPlaylists, searchSpotifyTracks } from '../api/playlistApi.js'
+import {
+  getMySearchHistories,
+  getPublicPlaylistRankings,
+  getPublicPlaylists,
+  searchSpotifyTracks,
+} from '../api/playlistApi.js'
 import { useAuth } from '../hooks/useAuth.js'
 
 const dashboardItems = [
@@ -11,6 +16,12 @@ const dashboardItems = [
     label: '공개 플레이리스트',
     metric: 'Browse',
     tone: 'green',
+  },
+  {
+    id: 'playlist-rankings',
+    label: '인기 랭킹',
+    metric: 'Rank',
+    tone: 'amber',
   },
   {
     id: 'playlist-builder',
@@ -59,6 +70,8 @@ export function HomePage({ onSelectPlaylist }) {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [rankingPlaylists, setRankingPlaylists] = useState([])
+  const [rankingMessage, setRankingMessage] = useState('')
   const [trackSearchInput, setTrackSearchInput] = useState('')
   const [trackResults, setTrackResults] = useState([])
   const [isTrackSearching, setIsTrackSearching] = useState(false)
@@ -113,6 +126,31 @@ export function HomePage({ onSelectPlaylist }) {
       isActive = false
     }
   }, [filters, page])
+
+  useEffect(() => {
+    let isActive = true
+
+    async function fetchRankings() {
+      setRankingMessage('')
+
+      try {
+        const response = await getPublicPlaylistRankings({ size: 5 })
+        if (isActive) {
+          setRankingPlaylists(Array.isArray(response) ? response : [])
+        }
+      } catch (error) {
+        if (isActive) {
+          setRankingMessage(error.message ?? '랭킹을 불러오지 못했습니다.')
+        }
+      }
+    }
+
+    fetchRankings()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
 
   const fetchSearchHistories = useCallback(async () => {
     if (!isAuthenticated) {
@@ -342,6 +380,30 @@ export function HomePage({ onSelectPlaylist }) {
             </div>
           </div>
 
+          <div id="playlist-rankings" className="panel">
+            <div className="panel-header">
+              <h2>인기 랭킹</h2>
+              <span>좋아요+댓글</span>
+            </div>
+
+            {rankingMessage ? <p className="panel-error">{rankingMessage}</p> : null}
+
+            {rankingPlaylists.length > 0 ? (
+              <div className="ranking-list" aria-label="공개 플레이리스트 랭킹">
+                {rankingPlaylists.map((playlist, index) => (
+                  <RankingItem
+                    index={index}
+                    key={playlist.playlistId}
+                    onSelectPlaylist={onSelectPlaylist}
+                    playlist={playlist}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState title="랭킹 데이터가 없습니다" description="좋아요와 댓글이 쌓이면 인기 플레이리스트가 표시됩니다." />
+            )}
+          </div>
+
           <div id="track-search" className="panel">
             <div className="panel-header">
               <h2>Spotify 곡 검색</h2>
@@ -395,6 +457,30 @@ export function HomePage({ onSelectPlaylist }) {
         </section>
       </main>
     </AppShell>
+  )
+}
+
+function RankingItem({ index, onSelectPlaylist, playlist }) {
+  function handleClick(event) {
+    if (!onSelectPlaylist) {
+      return
+    }
+
+    event.preventDefault()
+    onSelectPlaylist(playlist.playlistId)
+  }
+
+  return (
+    <a className="ranking-item" href={`#playlist/${playlist.playlistId}`} onClick={handleClick}>
+      <span className="ranking-number">{index + 1}</span>
+      <span className="ranking-main">
+        <strong>{playlist.title}</strong>
+        <small>{playlist.userNickname}</small>
+      </span>
+      <span className="ranking-score">
+        {formatCount(Number(playlist.likeCount ?? 0) * 3 + Number(playlist.commentCount ?? 0) * 2)}
+      </span>
+    </a>
   )
 }
 

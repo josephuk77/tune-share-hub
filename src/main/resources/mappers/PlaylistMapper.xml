@@ -132,6 +132,37 @@
         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
+    <select id="findPublicPlaylistRankings" resultType="com.tunesharehub.entity.Playlist">
+        SELECT
+        <include refid="playlistColumns"/>
+        FROM PLAYLISTS P
+        JOIN USERS U ON U.USER_ID = P.USER_ID
+        WHERE P.PUBLIC_YN = 'Y'
+          AND P.DELETED_AT IS NULL
+          AND U.DELETED_AT IS NULL
+        <choose>
+            <when test="metric == 'like'">
+                ORDER BY P.LIKE_COUNT DESC, P.COMMENT_COUNT DESC, P.COPY_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <when test="metric == 'comment'">
+                ORDER BY P.COMMENT_COUNT DESC, P.LIKE_COUNT DESC, P.COPY_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <when test="metric == 'view'">
+                ORDER BY P.VIEW_COUNT DESC, P.LIKE_COUNT DESC, P.COMMENT_COUNT DESC, P.CREATED_AT DESC, P.PLAYLIST_ID DESC
+            </when>
+            <otherwise>
+                ORDER BY (P.LIKE_COUNT * 3 + P.COMMENT_COUNT * 2) DESC,
+                         P.LIKE_COUNT DESC,
+                         P.COMMENT_COUNT DESC,
+                         P.COPY_COUNT DESC,
+                         P.VIEW_COUNT DESC,
+                         P.CREATED_AT DESC,
+                         P.PLAYLIST_ID DESC
+            </otherwise>
+        </choose>
+        FETCH FIRST #{size} ROWS ONLY
+    </select>
+
     <select id="findLikedByUserId" resultType="com.tunesharehub.entity.Playlist">
         SELECT
         <include refid="playlistColumns"/>
