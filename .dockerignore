@@ -1,0 +1,13 @@
+.git
+.gradle
+build
+out
+*.log
+.env
+
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+.idea
+.DS_Store
