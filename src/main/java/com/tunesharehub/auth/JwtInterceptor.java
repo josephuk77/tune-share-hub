@@ -19,6 +19,8 @@ public class JwtInterceptor implements HandlerInterceptor {
     private static final Pattern PUBLIC_PLAYLIST_DETAIL_PATTERN = Pattern.compile("^/api/playlists/[1-9]\\d*/?$");
     private static final Pattern PUBLIC_PLAYLIST_CHILD_PATTERN =
             Pattern.compile("^/api/playlists/[1-9]\\d*/(tracks|comments|similar)/?$");
+    private static final Pattern PUBLIC_SPOTIFY_TRACK_SEARCH_PATTERN =
+            Pattern.compile("^/api/spotify/search/tracks/?$");
 
     private final JwtProvider jwtProvider;
 
@@ -53,7 +55,8 @@ public class JwtInterceptor implements HandlerInterceptor {
         String requestPath = getRequestPath(request);
         return PUBLIC_PLAYLIST_LIST_PATTERN.matcher(requestPath).matches()
                 || PUBLIC_PLAYLIST_DETAIL_PATTERN.matcher(requestPath).matches()
-                || PUBLIC_PLAYLIST_CHILD_PATTERN.matcher(requestPath).matches();
+                || PUBLIC_PLAYLIST_CHILD_PATTERN.matcher(requestPath).matches()
+                || PUBLIC_SPOTIFY_TRACK_SEARCH_PATTERN.matcher(requestPath).matches();
     }
 
     private String getRequestPath(HttpServletRequest request) {

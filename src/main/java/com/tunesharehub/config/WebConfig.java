@@ -26,8 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/api/auth/login",
                         "/api/auth/refresh",
-                        "/api/auth/logout",
-                        "/api/spotify/search/**"
+                        "/api/auth/logout"
                 );
     }
 

@@ -13,18 +13,21 @@ import org.springframework.stereotype.Service;
 public class SpotifyService {
 
     private final SpotifyClient spotifyClient;
+    private final SearchHistoryService searchHistoryService;
 
-    public SpotifyService(SpotifyClient spotifyClient) {
+    public SpotifyService(SpotifyClient spotifyClient, SearchHistoryService searchHistoryService) {
         this.spotifyClient = spotifyClient;
+        this.searchHistoryService = searchHistoryService;
     }
 
-    public TrackSearchResponse searchTracks(String query, int page, int size) {
+    public TrackSearchResponse searchTracks(Long userId, String query, int page, int size) {
+        String normalizedQuery = query.trim();
         int offset = page * size;
         if (offset > 1000) {
             throw new SpotifyApiException("Spotify 검색 offset은 1000을 초과할 수 없습니다.");
         }
 
-        SpotifySearchResponse response = spotifyClient.searchTracks(query, size, offset);
+        SpotifySearchResponse response = spotifyClient.searchTracks(normalizedQuery, size, offset);
         if (response == null) {
             throw new SpotifyApiException("Spotify 트랙 검색 응답이 올바르지 않습니다.");
         }
@@ -39,8 +42,10 @@ public class SpotifyService {
                 .map(this::toTrackSearchItemResponse)
                 .toList();
 
+        searchHistoryService.recordSearch(userId, normalizedQuery);
+
         return new TrackSearchResponse(
-                query,
+                normalizedQuery,
                 page,
                 size,
                 tracks.total(),

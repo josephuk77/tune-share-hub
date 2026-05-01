@@ -81,6 +81,16 @@ class JwtInterceptorTest {
     }
 
     @Test
+    void publicSpotifyTrackSearchDoesNotRequireToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/spotify/search/tracks");
+
+        boolean result = jwtInterceptor.preHandle(request, response, handler);
+
+        assertThat(result).isTrue();
+        verify(jwtProvider, never()).parseAccessToken(anyString());
+    }
+
+    @Test
     void malformedPublicPlaylistPathStillRequiresToken() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/latest");
 
@@ -92,6 +102,19 @@ class JwtInterceptorTest {
     @Test
     void publicEndpointParsesTokenWhenAuthorizationHeaderExists() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/10");
+        request.addHeader("Authorization", "Bearer access-token");
+        AuthUser authUser = new AuthUser(1L, "user@example.com", "alice", "USER");
+        when(jwtProvider.parseAccessToken("access-token")).thenReturn(authUser);
+
+        boolean result = jwtInterceptor.preHandle(request, response, handler);
+
+        assertThat(result).isTrue();
+        assertThat(request.getAttribute(JwtInterceptor.AUTH_USER_ATTRIBUTE)).isEqualTo(authUser);
+    }
+
+    @Test
+    void publicSpotifyTrackSearchParsesTokenWhenAuthorizationHeaderExists() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/spotify/search/tracks");
         request.addHeader("Authorization", "Bearer access-token");
         AuthUser authUser = new AuthUser(1L, "user@example.com", "alice", "USER");
         when(jwtProvider.parseAccessToken("access-token")).thenReturn(authUser);
