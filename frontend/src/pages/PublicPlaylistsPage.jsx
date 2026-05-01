@@ -1,41 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AppShell } from '../components/layout/AppShell.jsx'
+import { useEffect, useMemo, useState } from 'react'
+import { getPublicPlaylistRankings, getPublicPlaylists } from '../api/playlistApi.js'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
-import {
-  getMySearchHistories,
-  getPublicPlaylistRankings,
-  getPublicPlaylists,
-  searchSpotifyTracks,
-} from '../api/playlistApi.js'
+import { AppShell } from '../components/layout/AppShell.jsx'
 import { useAuth } from '../hooks/useAuth.js'
-
-const dashboardItems = [
-  {
-    id: 'public-playlists',
-    label: '공개 플레이리스트',
-    metric: 'Browse',
-    tone: 'green',
-  },
-  {
-    id: 'playlist-rankings',
-    label: '인기 랭킹',
-    metric: 'Rank',
-    tone: 'amber',
-  },
-  {
-    id: 'playlist-builder',
-    label: '새 플레이리스트',
-    metric: 'Create',
-    tone: 'cyan',
-  },
-  {
-    id: 'track-search',
-    label: 'Spotify 곡 검색',
-    metric: 'Search',
-    tone: 'rose',
-  },
-]
 
 const searchTypeOptions = [
   { value: 'title', label: '제목' },
@@ -56,7 +24,7 @@ const filterValueParsers = {
   size: Number,
 }
 
-export function HomePage({ onSelectPlaylist }) {
+export function PublicPlaylistsPage({ onSelectPlaylist }) {
   const { isAuthenticated } = useAuth()
   const [keywordInput, setKeywordInput] = useState('')
   const [filters, setFilters] = useState({
@@ -72,22 +40,6 @@ export function HomePage({ onSelectPlaylist }) {
   const [errorMessage, setErrorMessage] = useState('')
   const [rankingPlaylists, setRankingPlaylists] = useState([])
   const [rankingMessage, setRankingMessage] = useState('')
-  const [trackSearchInput, setTrackSearchInput] = useState('')
-  const [trackResults, setTrackResults] = useState([])
-  const [isTrackSearching, setIsTrackSearching] = useState(false)
-  const [trackSearchMessage, setTrackSearchMessage] = useState('')
-  const [searchHistories, setSearchHistories] = useState([])
-  const trackSearchRequestRef = useRef(0)
-  const isMountedRef = useRef(false)
-
-  useEffect(() => {
-    isMountedRef.current = true
-
-    return () => {
-      isMountedRef.current = false
-      trackSearchRequestRef.current += 1
-    }
-  }, [])
 
   useEffect(() => {
     let isActive = true
@@ -152,36 +104,6 @@ export function HomePage({ onSelectPlaylist }) {
     }
   }, [])
 
-  const fetchSearchHistories = useCallback(async () => {
-    if (!isAuthenticated) {
-      return []
-    }
-
-    try {
-      const response = await getMySearchHistories({ size: 8 })
-      return Array.isArray(response) ? response : []
-    } catch {
-      return []
-    }
-  }, [isAuthenticated])
-
-  useEffect(() => {
-    let isActive = true
-
-    async function loadSearchHistories() {
-      const histories = await fetchSearchHistories()
-      if (isActive) {
-        setSearchHistories(histories)
-      }
-    }
-
-    loadSearchHistories()
-
-    return () => {
-      isActive = false
-    }
-  }, [fetchSearchHistories])
-
   const activeFilterLabel = useMemo(() => {
     const sortLabel = sortOptions.find((option) => option.value === filters.sort)?.label
     const typeLabel = searchTypeOptions.find((option) => option.value === filters.searchType)?.label
@@ -207,81 +129,21 @@ export function HomePage({ onSelectPlaylist }) {
     }))
   }
 
-  async function handleTrackSearchSubmit(event) {
-    event.preventDefault()
-    await runTrackSearch(trackSearchInput)
-  }
-
-  async function runTrackSearch(rawQuery) {
-    const query = rawQuery.trim()
-
-    if (!query) {
-      setTrackSearchMessage('검색어를 입력해 주세요.')
-      return
-    }
-
-    setTrackSearchInput(query)
-    setIsTrackSearching(true)
-    setTrackSearchMessage('')
-    const requestId = trackSearchRequestRef.current + 1
-    trackSearchRequestRef.current = requestId
-
-    try {
-      const response = await searchSpotifyTracks({ query, size: 8 })
-      if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
-        return
-      }
-
-      const tracks = Array.isArray(response.tracks) ? response.tracks : []
-      setTrackResults(tracks)
-      const histories = await fetchSearchHistories()
-      if (isMountedRef.current && trackSearchRequestRef.current === requestId) {
-        setSearchHistories(histories)
-      }
-    } catch (error) {
-      if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
-        return
-      }
-
-      setTrackSearchMessage(error.message ?? '곡 검색에 실패했습니다.')
-    } finally {
-      if (isMountedRef.current && trackSearchRequestRef.current === requestId) {
-        setIsTrackSearching(false)
-      }
-    }
-  }
-
-  function handleHistorySearch(query) {
-    if (isTrackSearching) {
-      return
-    }
-    runTrackSearch(query)
-  }
-
   return (
-    <AppShell>
+    <AppShell activePage="public-playlists">
       <main className="workspace">
         <section className="workspace-header">
           <div>
-            <p className="eyebrow">Dashboard</p>
-            <h1>플레이리스트 작업대</h1>
+            <p className="eyebrow">Explore</p>
+            <h1>공개 플레이리스트</h1>
           </div>
           <span className="status-pill">{isAuthenticated ? '세션 활성' : '둘러보기'}</span>
         </section>
 
-        <section className="dashboard-grid" aria-label="주요 작업">
-          {dashboardItems.map((item) => (
-            <a className={`dashboard-card ${item.tone}`} href={`#${item.id}`} key={item.id}>
-              <span>{item.metric}</span>
-              <strong>{item.label}</strong>
-            </a>
-          ))}
-        </section>
-
-        <section className="content-grid">
+        <section className="content-grid page-grid">
           <div id="public-playlists" className="panel panel-wide">
             <div className="panel-header">
-              <h2>공개 플레이리스트</h2>
+              <h2>탐색 목록</h2>
               <span>{activeFilterLabel}</span>
             </div>
 
@@ -289,18 +151,18 @@ export function HomePage({ onSelectPlaylist }) {
               <label>
                 <span>검색</span>
                 <input
-                  type="search"
-                  value={keywordInput}
                   onChange={(event) => setKeywordInput(event.target.value)}
                   placeholder="플레이리스트 검색"
+                  type="search"
+                  value={keywordInput}
                 />
               </label>
 
               <label>
                 <span>대상</span>
                 <select
-                  value={filters.searchType}
                   onChange={(event) => handleFilterChange('searchType', event.target.value)}
+                  value={filters.searchType}
                 >
                   {searchTypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -312,7 +174,7 @@ export function HomePage({ onSelectPlaylist }) {
 
               <label>
                 <span>정렬</span>
-                <select value={filters.sort} onChange={(event) => handleFilterChange('sort', event.target.value)}>
+                <select onChange={(event) => handleFilterChange('sort', event.target.value)} value={filters.sort}>
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -323,7 +185,7 @@ export function HomePage({ onSelectPlaylist }) {
 
               <label>
                 <span>개수</span>
-                <select value={filters.size} onChange={(event) => handleFilterChange('size', event.target.value)}>
+                <select onChange={(event) => handleFilterChange('size', event.target.value)} value={filters.size}>
                   {sizeOptions.map((option) => (
                     <option key={option} value={option}>
                       {option}개
@@ -354,30 +216,14 @@ export function HomePage({ onSelectPlaylist }) {
               </>
             ) : (
               <EmptyState
-                title={isLoading ? '플레이리스트를 불러오는 중입니다' : '표시할 플레이리스트가 없습니다'}
                 description={
                   filters.keyword
                     ? '검색 조건에 맞는 공개 플레이리스트가 없습니다.'
                     : '새로운 공개 플레이리스트를 기다리고 있습니다.'
                 }
+                title={isLoading ? '플레이리스트를 불러오는 중입니다' : '표시할 플레이리스트가 없습니다'}
               />
             )}
-          </div>
-
-          <div id="my-playlists" className="panel">
-            <div className="panel-header">
-              <h2>내 플레이리스트</h2>
-              <span>private</span>
-            </div>
-            <EmptyState
-              title="아직 만든 플레이리스트가 없습니다"
-              description="나만의 첫 플레이리스트를 준비할 차례입니다."
-            />
-            <div className="panel-actions">
-              <a className="button button-primary" href="#playlist-builder">
-                새 플레이리스트 만들기
-              </a>
-            </div>
           </div>
 
           <div id="playlist-rankings" className="panel">
@@ -401,57 +247,6 @@ export function HomePage({ onSelectPlaylist }) {
               </div>
             ) : (
               <EmptyState title="랭킹 데이터가 없습니다" description="좋아요와 댓글이 쌓이면 인기 플레이리스트가 표시됩니다." />
-            )}
-          </div>
-
-          <div id="track-search" className="panel">
-            <div className="panel-header">
-              <h2>Spotify 곡 검색</h2>
-              <span>{trackResults.length}개의 결과</span>
-            </div>
-
-            <form className="home-track-search" onSubmit={handleTrackSearchSubmit}>
-              <input
-                onChange={(event) => setTrackSearchInput(event.target.value)}
-                placeholder="곡명 또는 아티스트 검색"
-                type="search"
-                value={trackSearchInput}
-              />
-              <Button className="button-secondary" disabled={isTrackSearching} type="submit">
-                {isTrackSearching ? '검색 중' : '검색'}
-              </Button>
-            </form>
-
-            {searchHistories.length > 0 ? (
-              <div className="search-history-strip" aria-label="최근 검색어">
-                <span>최근 검색어</span>
-                <div className="search-history-list">
-                  {searchHistories.map((history) => (
-                    <button
-                      className="search-history-chip"
-                      disabled={isTrackSearching}
-                      key={history.searchHistoryId}
-                      onClick={() => handleHistorySearch(history.query)}
-                      title={formatHistoryTitle(history.createdAt)}
-                      type="button"
-                    >
-                      {history.query}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {trackSearchMessage ? <p className="panel-error">{trackSearchMessage}</p> : null}
-
-            {trackResults.length > 0 ? (
-              <div className="home-track-list" aria-live="polite">
-                {trackResults.map((track) => (
-                  <TrackSearchItem key={track.spotifyTrackId} track={track} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="검색 결과가 없습니다" description="Spotify 카탈로그에서 곡과 아티스트를 찾아볼 수 있습니다." />
             )}
           </div>
         </section>
@@ -516,48 +311,6 @@ function PlaylistCard({ onSelectPlaylist, playlist }) {
   )
 }
 
-function TrackSearchItem({ track }) {
-  return (
-    <article className="home-track-item">
-      <div className="home-track-cover" aria-hidden="true">
-        {track.albumImageUrl ? <img src={track.albumImageUrl} alt="" /> : <span>{track.title?.slice(0, 1) ?? 'T'}</span>}
-      </div>
-      <div className="home-track-main">
-        <strong>{track.title}</strong>
-        <span>{track.artistName}</span>
-        <small>
-          {track.albumName || '앨범 정보 없음'} · {formatDuration(track.durationMs)}
-        </small>
-      </div>
-      {track.spotifyUrl ? (
-        <a className="button button-ghost" href={track.spotifyUrl} rel="noreferrer" target="_blank">
-          Spotify
-        </a>
-      ) : null}
-    </article>
-  )
-}
-
 function formatCount(value) {
   return Number(value ?? 0).toLocaleString('ko-KR')
-}
-
-function formatDuration(durationMs) {
-  const totalSeconds = Math.floor(Number(durationMs ?? 0) / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = String(totalSeconds % 60).padStart(2, '0')
-  return `${minutes}:${seconds}`
-}
-
-const historyDateFormatter = new Intl.DateTimeFormat('ko-KR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
-
-function formatHistoryTitle(value) {
-  if (!value) {
-    return '최근 검색어'
-  }
-
-  return `검색일 ${historyDateFormatter.format(new Date(value))}`
 }

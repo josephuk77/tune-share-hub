@@ -55,7 +55,7 @@ export function MyPage({ currentUser, onSelectPlaylist }) {
   }, [currentUserId])
 
   return (
-    <AppShell>
+    <AppShell activePage="my-playlists">
       <main className="workspace my-workspace">
         <section className="workspace-header">
           <div>

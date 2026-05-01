@@ -1,7 +1,14 @@
 import { Button } from '../common/Button.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
 
-export function AppShell({ children }) {
+const navItems = [
+  { href: '#public-playlists', id: 'public-playlists', label: '공개 플레이리스트' },
+  { href: '#track-search', id: 'track-search', label: '곡 검색' },
+  { href: '#playlist-builder', id: 'playlist-builder', label: '새 플레이리스트' },
+  { href: '#my-playlists', id: 'my-playlists', label: '내 플레이리스트' },
+]
+
+export function AppShell({ activePage, children }) {
   const { isAuthenticated, logout, user } = useAuth()
 
   return (
@@ -18,10 +25,16 @@ export function AppShell({ children }) {
         </div>
 
         <nav className="sidebar-nav">
-          <a href="#public-playlists">공개 플레이리스트</a>
-          <a href="#playlist-builder">새 플레이리스트</a>
-          <a href="#my-playlists">내 플레이리스트</a>
-          <a href="#track-search">곡 검색</a>
+          {navItems.map((item) => (
+            <a
+              aria-current={activePage === item.id ? 'page' : undefined}
+              className={activePage === item.id ? 'active' : undefined}
+              href={item.href}
+              key={item.id}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
       </aside>
 

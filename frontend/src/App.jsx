@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { AuthProvider } from './contexts/AuthProvider.jsx'
 import { useAuth } from './hooks/useAuth.js'
-import { HomePage } from './pages/HomePage.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { MyPage } from './pages/MyPage.jsx'
 import { PlaylistBuilderPage } from './pages/PlaylistBuilderPage.jsx'
 import { PlaylistDetailPage } from './pages/PlaylistDetailPage.jsx'
+import { PublicPlaylistsPage } from './pages/PublicPlaylistsPage.jsx'
+import { TrackSearchPage } from './pages/TrackSearchPage.jsx'
 
 function App() {
   return (
@@ -39,7 +40,7 @@ function AppContent() {
   }
 
   if (!isAuthenticated && hashState.isLoginRoute) {
-    return <LoginPage />
+    return <LoginPage onClose={() => navigateTo('public-playlists')} />
   }
 
   if (hashState.isBuilderRoute) {
@@ -47,7 +48,7 @@ function AppContent() {
       <PlaylistBuilderPage
         currentUser={user}
         onCreated={(playlistId) => {
-          window.location.hash = `playlist/${playlistId}`
+          navigateTo(`playlist/${playlistId}`)
         }}
       />
     )
@@ -58,10 +59,14 @@ function AppContent() {
       <MyPage
         currentUser={user}
         onSelectPlaylist={(playlistId) => {
-          window.location.hash = `playlist/${playlistId}`
+          navigateTo(`playlist/${playlistId}`)
         }}
       />
     )
+  }
+
+  if (hashState.isTrackSearchRoute) {
+    return <TrackSearchPage />
   }
 
   if (hashState.selectedPlaylistId) {
@@ -69,10 +74,10 @@ function AppContent() {
       <PlaylistDetailPage
         currentUser={user}
         onBack={() => {
-          window.location.hash = 'public-playlists'
+          navigateTo('public-playlists')
         }}
         onSelectPlaylist={(playlistId) => {
-          window.location.hash = `playlist/${playlistId}`
+          navigateTo(`playlist/${playlistId}`)
         }}
         playlistId={hashState.selectedPlaylistId}
       />
@@ -80,9 +85,9 @@ function AppContent() {
   }
 
   return (
-    <HomePage
+    <PublicPlaylistsPage
       onSelectPlaylist={(playlistId) => {
-        window.location.hash = `playlist/${playlistId}`
+        navigateTo(`playlist/${playlistId}`)
       }}
     />
   )
@@ -94,8 +99,13 @@ function getHashState() {
     isBuilderRoute: window.location.hash === '#playlist-builder',
     isLoginRoute: window.location.hash === '#login',
     isMyPageRoute: window.location.hash === '#my-playlists',
+    isTrackSearchRoute: window.location.hash === '#track-search',
     selectedPlaylistId: match ? Number(match[1]) : null,
   }
+}
+
+function navigateTo(route) {
+  window.location.hash = route
 }
 
 export default App

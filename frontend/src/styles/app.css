@@ -72,6 +72,7 @@ a:focus-visible {
 
 .login-panel {
   display: grid;
+  position: relative;
   width: min(920px, 100%);
   grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
   overflow: hidden;
@@ -79,6 +80,28 @@ a:focus-visible {
   border-radius: 8px;
   background: var(--color-surface);
   box-shadow: var(--shadow-panel);
+}
+
+.login-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: rgba(16, 17, 20, 0.82);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.login-close:hover {
+  border-color: rgba(56, 189, 248, 0.68);
 }
 
 .login-copy {
@@ -200,6 +223,12 @@ a:focus-visible {
   background: var(--color-surface);
 }
 
+.sidebar-nav a.active,
+.sidebar-nav a[aria-current='page'] {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
 .main-column {
   min-width: 0;
 }
@@ -289,6 +318,10 @@ a:focus-visible {
 .content-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 16px;
+}
+
+.page-grid {
+  align-items: start;
 }
 
 .panel {
@@ -1381,6 +1414,7 @@ a:focus-visible {
   .my-activity-item,
   .playlist-toolbar,
   .playlist-card,
+  .ranking-item,
   .similar-list,
   .track-row {
     grid-template-columns: 1fr;
