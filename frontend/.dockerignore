@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+.vite
+.npm-cache
+*.log
+.env
+.env.*
+!.env.example

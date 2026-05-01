@@ -208,6 +208,12 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,intellij+all,git,java,react
 
-# Local environment files
+### Local environment ###
 .env
+.env.*
 !.env.example
+.gradle-user/
+frontend/.npm-cache/
+
+### Docker local data ###
+docker/oracle/oradata/
