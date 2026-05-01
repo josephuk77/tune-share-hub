@@ -22,6 +22,8 @@ import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
 import { AppShell } from '../components/layout/AppShell.jsx'
 
+const COMMENT_PAGE_SIZE = 20
+
 export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, playlistId }) {
   const [detail, setDetail] = useState({
     playlist: null,
@@ -39,6 +41,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   const [editingCommentId, setEditingCommentId] = useState(null)
   const [commentEditContent, setCommentEditContent] = useState('')
   const [updatingCommentId, setUpdatingCommentId] = useState(null)
+  const [commentPage, setCommentPage] = useState(0)
+  const [hasMoreComments, setHasMoreComments] = useState(false)
+  const [isCommentsLoadingMore, setIsCommentsLoadingMore] = useState(false)
   const [hasLiked, setHasLiked] = useState(false)
   const [isLikeSubmitting, setIsLikeSubmitting] = useState(false)
   const [isEditingPlaylist, setIsEditingPlaylist] = useState(false)
@@ -80,6 +85,9 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       setCommentContent('')
       setCommentEditContent('')
       setEditingCommentId(null)
+      setCommentPage(0)
+      setHasMoreComments(false)
+      setIsCommentsLoadingMore(false)
       clearActionMessage()
       clearTrackMessage()
       setTrackSearchQuery('')
@@ -92,7 +100,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
         const [playlist, tracks, comments, similarPlaylists, liked] = await Promise.all([
           getPlaylist(playlistId),
           getPlaylistTracks(playlistId).catch(() => []),
-          getPlaylistComments(playlistId, { size: 20 }).catch(() => []),
+          getPlaylistComments(playlistId, { size: COMMENT_PAGE_SIZE }).catch(() => []),
           getSimilarPlaylists(playlistId).catch(() => []),
           currentUserId ? isPlaylistLiked(playlistId).catch(() => false) : Promise.resolve(false),
         ])
@@ -101,12 +109,14 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
           return
         }
 
+        const normalizedComments = Array.isArray(comments) ? comments : []
         setDetail({
           playlist,
           tracks: Array.isArray(tracks) ? tracks : [],
-          comments: Array.isArray(comments) ? comments : [],
+          comments: normalizedComments,
           similarPlaylists: Array.isArray(similarPlaylists) ? similarPlaylists : [],
         })
+        setHasMoreComments(normalizedComments.length === COMMENT_PAGE_SIZE)
         setEditTitle(playlist.title ?? '')
         setEditDescription(playlist.description ?? '')
         setEditPublicYn(Boolean(playlist.publicYn))
@@ -380,6 +390,45 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
       showActionMessage(error.message ?? '댓글을 수정하지 못했습니다.')
     } finally {
       setUpdatingCommentId(null)
+    }
+  }
+
+  async function handleCommentLoadMore() {
+    if (!playlist || isCommentsLoadingMore || !hasMoreComments) {
+      return
+    }
+
+    const sourcePlaylistId = playlist.playlistId
+    const nextPage = commentPage + 1
+    setIsCommentsLoadingMore(true)
+    clearActionMessage()
+
+    try {
+      const nextComments = await getPlaylistComments(sourcePlaylistId, {
+        page: nextPage,
+        size: COMMENT_PAGE_SIZE,
+      })
+      if (!isMountedRef.current || activePlaylistIdRef.current !== sourcePlaylistId) {
+        return
+      }
+
+      const normalizedNextComments = Array.isArray(nextComments) ? nextComments : []
+      setDetail((currentDetail) => {
+        const existingCommentIds = new Set(currentDetail.comments.map((comment) => comment.commentId))
+        const appendedComments = normalizedNextComments.filter((comment) => !existingCommentIds.has(comment.commentId))
+        return {
+          ...currentDetail,
+          comments: [...currentDetail.comments, ...appendedComments],
+        }
+      })
+      setCommentPage(nextPage)
+      setHasMoreComments(normalizedNextComments.length === COMMENT_PAGE_SIZE)
+    } catch (error) {
+      showActionMessage(error.message ?? '댓글을 더 불러오지 못했습니다.')
+    } finally {
+      if (isMountedRef.current && activePlaylistIdRef.current === sourcePlaylistId) {
+        setIsCommentsLoadingMore(false)
+      }
     }
   }
 
@@ -713,6 +762,13 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
                         updatingCommentId={updatingCommentId}
                       />
                     ))}
+                    {hasMoreComments ? (
+                      <div className="comment-list-actions">
+                        <Button className="button-secondary" disabled={isCommentsLoadingMore} onClick={handleCommentLoadMore}>
+                          {isCommentsLoadingMore ? '불러오는 중' : '댓글 더 보기'}
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <EmptyState title="댓글이 없습니다" description="첫 반응을 기다리고 있습니다." />

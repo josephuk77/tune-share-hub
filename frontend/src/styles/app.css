@@ -1019,6 +1019,12 @@ a:focus-visible {
   gap: 10px;
 }
 
+.comment-list-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
 .track-row,
 .track-candidate {
   display: grid;
