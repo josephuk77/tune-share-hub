@@ -34,7 +34,9 @@ SPOTIFY_CLIENT_ID=Spotify Dashboard의 Client ID
 SPOTIFY_CLIENT_SECRET=Spotify Dashboard의 Client Secret
 ```
 
-실제 값은 `.env` 또는 로컬 실행 환경에만 둔다. `SPOTIFY_CLIENT_SECRET`은 절대 커밋하지 않는다.
+실제 값은 로컬 실행 환경에만 둔다. `SPOTIFY_CLIENT_SECRET`은 절대 커밋하지 않는다.
+
+Spring Boot는 기본적으로 `.env` 파일을 자동으로 읽지 않는다. 로컬에서 `.env` 값을 쓰려면 운영체제 환경변수, IntelliJ Run Configuration, EnvFile 플러그인 같은 방식으로 백엔드 프로세스에 환경변수를 주입해야 한다.
 
 ## 프론트엔드 환경변수
 
@@ -47,7 +49,7 @@ VITE_API_BASE_URL=
 비워두는 경우:
 
 - Vite 개발 서버를 사용할 때 `/api` 요청은 `frontend/vite.config.js`의 proxy를 통해 `http://localhost:8080`으로 전달된다.
-- Docker Compose를 사용할 때 `/api` 요청은 Nginx가 backend 컨테이너로 프록시한다.
+- Docker Compose 또는 별도 리버스 프록시 환경에서는 `/api` 요청을 백엔드로 프록시하도록 구성한다.
 
 값을 넣는 경우:
 
@@ -55,7 +57,9 @@ VITE_API_BASE_URL=
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
-프론트엔드와 백엔드가 프록시 없이 서로 다른 origin에서 직접 통신해야 할 때만 넣는다.
+끝에 슬래시(`/`)를 붙이지 않는다.
+
+프론트엔드와 백엔드가 프록시 없이 서로 다른 origin에서 직접 통신해야 할 때만 넣는다. 이 경우 백엔드에 CORS 설정이 필요하다.
 
 ## 확인 방법
 
