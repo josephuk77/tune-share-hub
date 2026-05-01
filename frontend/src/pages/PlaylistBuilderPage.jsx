@@ -5,6 +5,7 @@ import { EmptyState } from '../components/common/EmptyState.jsx'
 import { AppShell } from '../components/layout/AppShell.jsx'
 
 export function PlaylistBuilderPage({ currentUser, onCreated }) {
+  const [builderStep, setBuilderStep] = useState('tracks')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
@@ -107,6 +108,17 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
     })
   }
 
+  function goToDetailsStep() {
+    setSearchMessage('')
+    setSaveMessage('')
+    setBuilderStep('details')
+  }
+
+  function goToTracksStep() {
+    setSaveMessage('')
+    setBuilderStep('tracks')
+  }
+
   return (
     <AppShell activePage="playlist-builder">
       <main className="workspace builder-workspace">
@@ -128,108 +140,173 @@ export function PlaylistBuilderPage({ currentUser, onCreated }) {
             </a>
           </section>
         ) : (
-          <section className="builder-grid">
-            <div className="panel builder-panel">
-              <div className="panel-header">
-                <h2>기본 정보</h2>
-                <span>{isPublic ? 'public' : 'private'}</span>
-              </div>
+          <>
+            <section className="builder-stepper" aria-label="플레이리스트 만들기 단계">
+              <button
+                aria-current={builderStep === 'tracks' ? 'step' : undefined}
+                className={builderStep === 'tracks' ? 'builder-step active' : 'builder-step'}
+                onClick={goToTracksStep}
+                type="button"
+              >
+                <span className="builder-step-code">01</span>
+                <span className="builder-step-text">
+                  <strong>곡 구성</strong>
+                  <small>검색과 담은 곡</small>
+                </span>
+              </button>
+              <button
+                aria-current={builderStep === 'details' ? 'step' : undefined}
+                className={builderStep === 'details' ? 'builder-step active' : 'builder-step'}
+                onClick={goToDetailsStep}
+                type="button"
+              >
+                <span className="builder-step-code">02</span>
+                <span className="builder-step-text">
+                  <strong>기본 정보</strong>
+                  <small>제목, 설명, 분류</small>
+                </span>
+              </button>
+            </section>
 
-              <div className="builder-form">
-                <label>
-                  <span>제목</span>
-                  <input
-                    maxLength={100}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder="예: 새벽 집중 믹스"
-                    value={title}
-                  />
-                </label>
+            {builderStep === 'tracks' ? (
+              <section className="builder-compose-grid">
+                <div className="panel builder-panel">
+                  <div className="panel-header">
+                    <h2>Spotify 곡 검색</h2>
+                    <span>{searchResults.length}개의 결과</span>
+                  </div>
 
-                <label>
-                  <span>설명</span>
-                  <textarea
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="어떤 순간에 어울리는 플레이리스트인지 적어보세요."
-                    rows={6}
-                    value={description}
-                  />
-                </label>
-
-                <label className="builder-toggle">
-                  <input checked={isPublic} onChange={(event) => setIsPublic(event.target.checked)} type="checkbox" />
-                  <span>공개 플레이리스트로 게시</span>
-                </label>
-
-                {saveMessage ? <p className="panel-error">{saveMessage}</p> : null}
-
-                <Button className="button-primary" disabled={isSaving} onClick={handleSave}>
-                  {isSaving ? '저장 중' : `플레이리스트 저장 · ${selectedTracks.length}곡`}
-                </Button>
-              </div>
-            </div>
-
-            <div className="panel builder-panel">
-              <div className="panel-header">
-                <h2>Spotify 곡 검색</h2>
-                <span>{searchResults.length}개의 결과</span>
-              </div>
-
-              <form className="builder-search" onSubmit={handleSearchSubmit}>
-                <input
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="곡명 또는 아티스트 검색"
-                  type="search"
-                  value={searchQuery}
-                />
-                <Button className="button-secondary" disabled={isSearching} type="submit">
-                  {isSearching ? '검색 중' : '검색'}
-                </Button>
-              </form>
-
-              {searchMessage ? <p className="panel-error">{searchMessage}</p> : null}
-
-              {searchResults.length > 0 ? (
-                <div className="builder-track-list" aria-live="polite">
-                  {searchResults.map((track) => (
-                    <TrackCandidate
-                      isSelected={selectedTracks.some((selectedTrack) => selectedTrack.spotifyTrackId === track.spotifyTrackId)}
-                      key={track.spotifyTrackId}
-                      onAdd={addTrack}
-                      track={track}
+                  <form className="builder-search" onSubmit={handleSearchSubmit}>
+                    <input
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="곡명 또는 아티스트 검색"
+                      type="search"
+                      value={searchQuery}
                     />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState title="검색 결과가 없습니다" description="Spotify 카탈로그에서 곡을 찾아 추가할 수 있습니다." />
-              )}
-            </div>
+                    <Button className="button-secondary" disabled={isSearching} type="submit">
+                      {isSearching ? '검색 중' : '검색'}
+                    </Button>
+                  </form>
 
-            <div className="panel builder-panel builder-selected-panel">
-              <div className="panel-header">
-                <h2>담은 곡</h2>
-                <span>{selectedTracks.length}곡</span>
-              </div>
+                  {searchMessage ? <p className="panel-error">{searchMessage}</p> : null}
 
-              {selectedTracks.length > 0 ? (
-                <div className="builder-selected-list">
-                  {selectedTracks.map((track, index) => (
-                    <SelectedTrack
-                      index={index}
-                      isFirst={index === 0}
-                      isLast={index === selectedTracks.length - 1}
-                      key={track.spotifyTrackId}
-                      onMove={moveTrack}
-                      onRemove={removeTrack}
-                      track={track}
-                    />
-                  ))}
+                  {searchResults.length > 0 ? (
+                    <div className="builder-track-list" aria-live="polite">
+                      {searchResults.map((track) => (
+                        <TrackCandidate
+                          isSelected={selectedTracks.some((selectedTrack) => selectedTrack.spotifyTrackId === track.spotifyTrackId)}
+                          key={track.spotifyTrackId}
+                          onAdd={addTrack}
+                          track={track}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState title="검색 결과가 없습니다" description="Spotify 카탈로그에서 곡을 찾아 추가할 수 있습니다." />
+                  )}
                 </div>
-              ) : (
-                <EmptyState title="아직 담은 곡이 없습니다" description="검색 결과에서 곡을 추가하면 저장 순서대로 표시됩니다." />
-              )}
-            </div>
-          </section>
+
+                <div className="panel builder-panel builder-selected-panel">
+                  <div className="panel-header">
+                    <h2>담은 곡</h2>
+                    <span>{selectedTracks.length}곡</span>
+                  </div>
+
+                  {selectedTracks.length > 0 ? (
+                    <div className="builder-selected-list">
+                      {selectedTracks.map((track, index) => (
+                        <SelectedTrack
+                          index={index}
+                          isFirst={index === 0}
+                          isLast={index === selectedTracks.length - 1}
+                          key={track.spotifyTrackId}
+                          onMove={moveTrack}
+                          onRemove={removeTrack}
+                          track={track}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState title="아직 담은 곡이 없습니다" description="검색 결과에서 곡을 추가하면 저장 순서대로 표시됩니다." />
+                  )}
+
+                  <div className="builder-flow-actions">
+                    <span>{selectedTracks.length}곡 선택됨</span>
+                    <Button className="button-primary" onClick={goToDetailsStep}>
+                      다음: 기본 정보
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="builder-details-grid">
+                <div className="panel builder-panel">
+                  <div className="panel-header">
+                    <h2>기본 정보</h2>
+                    <span>{isPublic ? 'public' : 'private'}</span>
+                  </div>
+
+                  <div className="builder-form">
+                    <label>
+                      <span>제목</span>
+                      <input
+                        maxLength={100}
+                        onChange={(event) => setTitle(event.target.value)}
+                        placeholder="예: 새벽 집중 믹스"
+                        value={title}
+                      />
+                    </label>
+
+                    <label>
+                      <span>설명</span>
+                      <textarea
+                        onChange={(event) => setDescription(event.target.value)}
+                        placeholder="어떤 순간에 어울리는 플레이리스트인지 적어보세요."
+                        rows={6}
+                        value={description}
+                      />
+                    </label>
+
+                    <label className="builder-toggle">
+                      <input checked={isPublic} onChange={(event) => setIsPublic(event.target.checked)} type="checkbox" />
+                      <span>공개 플레이리스트로 게시</span>
+                    </label>
+
+                    {saveMessage ? <p className="panel-error">{saveMessage}</p> : null}
+
+                    <div className="builder-flow-actions">
+                      <Button className="button-secondary" onClick={goToTracksStep}>
+                        이전: 곡 구성
+                      </Button>
+                      <Button className="button-primary" disabled={isSaving} onClick={handleSave}>
+                        {isSaving ? '저장 중' : `플레이리스트 저장 · ${selectedTracks.length}곡`}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <aside className="panel builder-panel builder-meta-panel">
+                  <div className="panel-header">
+                    <h2>추가 분류</h2>
+                    <span>tags</span>
+                  </div>
+
+                  <div className="builder-meta-form">
+                    <label>
+                      <span>태그</span>
+                      <input disabled placeholder="예: 집중, 운동, 드라이브" />
+                    </label>
+                    <div className="builder-tag-preview" aria-label="태그 예시">
+                      <span>집중</span>
+                      <span>운동</span>
+                      <span>드라이브</span>
+                    </div>
+                    <p>태그와 분위기 같은 분류 정보는 이 영역에서 확장합니다.</p>
+                  </div>
+                </aside>
+              </section>
+            )}
+          </>
         )}
       </main>
     </AppShell>
