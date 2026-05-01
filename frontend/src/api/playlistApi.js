@@ -131,6 +131,15 @@ export function getMyComments({ page = 0, size = 20 } = {}) {
   return apiRequest(`/api/me/comments?${params.toString()}`)
 }
 
+export function getMySearchHistories({ page = 0, size = 10 } = {}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  })
+
+  return apiRequest(`/api/me/search-histories?${params.toString()}`)
+}
+
 export async function isPlaylistLiked(playlistId) {
   const pageSize = 100
   let page = 0
@@ -192,5 +201,5 @@ export function searchSpotifyTracks({ page = 0, query, size = 10 }) {
     size: String(size),
   })
 
-  return apiRequest(`/api/spotify/search/tracks?${params.toString()}`, { skipAuth: true })
+  return apiRequest(`/api/spotify/search/tracks?${params.toString()}`)
 }

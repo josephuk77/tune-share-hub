@@ -27,8 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/health",
                         "/api/auth/login",
                         "/api/auth/refresh",
-                        "/api/auth/logout",
-                        "/api/spotify/search/**"
+                        "/api/auth/logout"
                 );
     }
 

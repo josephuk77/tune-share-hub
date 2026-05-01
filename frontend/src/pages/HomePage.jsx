@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AppShell } from '../components/layout/AppShell.jsx'
 import { Button } from '../components/common/Button.jsx'
 import { EmptyState } from '../components/common/EmptyState.jsx'
-import { getPublicPlaylists, searchSpotifyTracks } from '../api/playlistApi.js'
+import { getMySearchHistories, getPublicPlaylists, searchSpotifyTracks } from '../api/playlistApi.js'
 import { useAuth } from '../hooks/useAuth.js'
 
 const dashboardItems = [
@@ -63,6 +63,7 @@ export function HomePage({ onSelectPlaylist }) {
   const [trackResults, setTrackResults] = useState([])
   const [isTrackSearching, setIsTrackSearching] = useState(false)
   const [trackSearchMessage, setTrackSearchMessage] = useState('')
+  const [searchHistories, setSearchHistories] = useState([])
   const trackSearchRequestRef = useRef(0)
   const isMountedRef = useRef(false)
 
@@ -113,6 +114,36 @@ export function HomePage({ onSelectPlaylist }) {
     }
   }, [filters, page])
 
+  const fetchSearchHistories = useCallback(async () => {
+    if (!isAuthenticated) {
+      return []
+    }
+
+    try {
+      const response = await getMySearchHistories({ size: 8 })
+      return Array.isArray(response) ? response : []
+    } catch {
+      return []
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    let isActive = true
+
+    async function loadSearchHistories() {
+      const histories = await fetchSearchHistories()
+      if (isActive) {
+        setSearchHistories(histories)
+      }
+    }
+
+    loadSearchHistories()
+
+    return () => {
+      isActive = false
+    }
+  }, [fetchSearchHistories])
+
   const activeFilterLabel = useMemo(() => {
     const sortLabel = sortOptions.find((option) => option.value === filters.sort)?.label
     const typeLabel = searchTypeOptions.find((option) => option.value === filters.searchType)?.label
@@ -140,13 +171,18 @@ export function HomePage({ onSelectPlaylist }) {
 
   async function handleTrackSearchSubmit(event) {
     event.preventDefault()
-    const query = trackSearchInput.trim()
+    await runTrackSearch(trackSearchInput)
+  }
+
+  async function runTrackSearch(rawQuery) {
+    const query = rawQuery.trim()
 
     if (!query) {
       setTrackSearchMessage('검색어를 입력해 주세요.')
       return
     }
 
+    setTrackSearchInput(query)
     setIsTrackSearching(true)
     setTrackSearchMessage('')
     const requestId = trackSearchRequestRef.current + 1
@@ -160,6 +196,10 @@ export function HomePage({ onSelectPlaylist }) {
 
       const tracks = Array.isArray(response.tracks) ? response.tracks : []
       setTrackResults(tracks)
+      const histories = await fetchSearchHistories()
+      if (isMountedRef.current && trackSearchRequestRef.current === requestId) {
+        setSearchHistories(histories)
+      }
     } catch (error) {
       if (!isMountedRef.current || trackSearchRequestRef.current !== requestId) {
         return
@@ -171,6 +211,13 @@ export function HomePage({ onSelectPlaylist }) {
         setIsTrackSearching(false)
       }
     }
+  }
+
+  function handleHistorySearch(query) {
+    if (isTrackSearching) {
+      return
+    }
+    runTrackSearch(query)
   }
 
   return (
@@ -313,6 +360,26 @@ export function HomePage({ onSelectPlaylist }) {
               </Button>
             </form>
 
+            {searchHistories.length > 0 ? (
+              <div className="search-history-strip" aria-label="최근 검색어">
+                <span>최근 검색어</span>
+                <div className="search-history-list">
+                  {searchHistories.map((history) => (
+                    <button
+                      className="search-history-chip"
+                      disabled={isTrackSearching}
+                      key={history.searchHistoryId}
+                      onClick={() => handleHistorySearch(history.query)}
+                      title={formatHistoryTitle(history.createdAt)}
+                      type="button"
+                    >
+                      {history.query}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {trackSearchMessage ? <p className="panel-error">{trackSearchMessage}</p> : null}
 
             {trackResults.length > 0 ? (
@@ -394,4 +461,17 @@ function formatDuration(durationMs) {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = String(totalSeconds % 60).padStart(2, '0')
   return `${minutes}:${seconds}`
+}
+
+const historyDateFormatter = new Intl.DateTimeFormat('ko-KR', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
+function formatHistoryTitle(value) {
+  if (!value) {
+    return '최근 검색어'
+  }
+
+  return `검색일 ${historyDateFormatter.format(new Date(value))}`
 }

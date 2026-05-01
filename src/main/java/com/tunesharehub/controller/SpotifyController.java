@@ -1,10 +1,13 @@
 package com.tunesharehub.controller;
 
+import com.tunesharehub.auth.AuthUser;
+import com.tunesharehub.auth.CurrentUser;
 import com.tunesharehub.dto.TrackSearchResponse;
 import com.tunesharehub.service.SpotifyService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,10 +30,11 @@ public class SpotifyController {
 
     @GetMapping("/search/tracks")
     public TrackSearchResponse searchTracks(
-            @RequestParam @NotBlank String q,
+            @CurrentUser(required = false) AuthUser authUser,
+            @RequestParam @NotBlank @Size(max = 255) String q,
             @RequestParam(defaultValue = "" + DEFAULT_PAGE) @Min(0) int page,
             @RequestParam(defaultValue = "" + DEFAULT_SIZE) @Min(1) @Max(10) int size
     ) {
-        return spotifyService.searchTracks(q, page, size);
+        return spotifyService.searchTracks(AuthUser.userIdOrNull(authUser), q, page, size);
     }
 }

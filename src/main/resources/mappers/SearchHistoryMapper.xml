@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tunesharehub.mapper.SearchHistoryMapper">
+
+    <resultMap id="searchHistoryResultMap" type="com.tunesharehub.entity.SearchHistory">
+        <id column="SEARCH_HISTORY_ID" property="searchHistoryId"/>
+        <result column="USER_ID" property="userId"/>
+        <result column="SEARCH_QUERY" property="query"/>
+        <result column="CREATED_AT" property="createdAt"/>
+        <result column="DELETED_AT" property="deletedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.tunesharehub.entity.SearchHistory">
+        MERGE INTO SEARCH_HISTORIES target
+        USING (
+            SELECT
+                #{userId} AS USER_ID,
+                #{query} AS SEARCH_QUERY
+            FROM DUAL
+        ) source
+        ON (
+            target.USER_ID = source.USER_ID
+            AND target.SEARCH_QUERY = source.SEARCH_QUERY
+            AND target.DELETED_AT IS NULL
+        )
+        WHEN MATCHED THEN
+            UPDATE SET target.CREATED_AT = SYSTIMESTAMP
+        WHEN NOT MATCHED THEN
+            INSERT (
+                SEARCH_HISTORY_ID,
+                USER_ID,
+                SEARCH_QUERY
+            ) VALUES (
+                SEQ_SEARCH_HISTORIES.NEXTVAL,
+                source.USER_ID,
+                source.SEARCH_QUERY
+            )
+    </insert>
+
+    <select id="findByUserId" resultMap="searchHistoryResultMap">
+        SELECT
+            SEARCH_HISTORY_ID,
+            USER_ID,
+            SEARCH_QUERY,
+            CREATED_AT,
+            DELETED_AT
+        FROM (
+            SELECT
+                SEARCH_HISTORY_ID,
+                USER_ID,
+                SEARCH_QUERY,
+                CREATED_AT,
+                DELETED_AT,
+                ROW_NUMBER() OVER (
+                    PARTITION BY SEARCH_QUERY
+                    ORDER BY CREATED_AT DESC, SEARCH_HISTORY_ID DESC
+                ) AS rn
+            FROM SEARCH_HISTORIES
+            WHERE USER_ID = #{userId}
+              AND DELETED_AT IS NULL
+        )
+        WHERE rn = 1
+        ORDER BY CREATED_AT DESC, SEARCH_HISTORY_ID DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+</mapper>
