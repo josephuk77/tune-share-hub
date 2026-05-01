@@ -107,6 +107,9 @@
                 <when test="searchType == 'author'">
                     AND U.NICKNAME LIKE '%' || #{keyword} || '%'
                 </when>
+                <when test="searchType == 'description'">
+                    AND DBMS_LOB.INSTR(P.DESCRIPTION, #{keyword}) > 0
+                </when>
                 <otherwise>
                     AND P.TITLE LIKE '%' || #{keyword} || '%'
                 </otherwise>

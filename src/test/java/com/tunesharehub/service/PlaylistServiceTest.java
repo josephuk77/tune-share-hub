@@ -55,6 +55,16 @@ class PlaylistServiceTest {
     }
 
     @Test
+    void getPublicPlaylistsAcceptsDescriptionSearch() {
+        when(playlistMapper.findPublicPlaylists("새벽", "description", "latest", 0, 20))
+                .thenReturn(List.of());
+
+        playlistService.getPublicPlaylists(" 새벽 ", " Description ", " latest ", 0, 20);
+
+        verify(playlistMapper).findPublicPlaylists("새벽", "description", "latest", 0, 20);
+    }
+
+    @Test
     void getLikedPlaylistsReturnsUserLikedPlaylists() {
         Playlist playlist = publicPlaylist();
         when(playlistMapper.findLikedByUserId(1L, 20, 10)).thenReturn(List.of(playlist));
@@ -123,7 +133,7 @@ class PlaylistServiceTest {
 
     @Test
     void getPublicPlaylistsRejectsInvalidSearchType() {
-        assertThatThrownBy(() -> playlistService.getPublicPlaylists("", "description", "latest", 0, 20))
+        assertThatThrownBy(() -> playlistService.getPublicPlaylists("", "tag", "latest", 0, 20))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("검색 타입이 올바르지 않습니다.");
     }
