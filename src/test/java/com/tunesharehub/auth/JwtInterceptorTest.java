@@ -81,6 +81,16 @@ class JwtInterceptorTest {
     }
 
     @Test
+    void publicPlaylistRankingDoesNotRequireToken() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/playlists/ranking");
+
+        boolean result = jwtInterceptor.preHandle(request, response, handler);
+
+        assertThat(result).isTrue();
+        verify(jwtProvider, never()).parseAccessToken(anyString());
+    }
+
+    @Test
     void publicSpotifyTrackSearchDoesNotRequireToken() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/spotify/search/tracks");
 

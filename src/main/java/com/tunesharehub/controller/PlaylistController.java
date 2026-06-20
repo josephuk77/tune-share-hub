@@ -46,6 +46,14 @@ public class PlaylistController {
         return playlistService.createPlaylist(authUser.userId(), request);
     }
 
+    @GetMapping("/playlists/ranking")
+    public List<PlaylistResponse> getPublicPlaylistRankings(
+            @RequestParam(defaultValue = "reaction") String metric,
+            @RequestParam(defaultValue = "5") @Min(1) @Max(20) int size
+    ) {
+        return playlistService.getPublicPlaylistRankings(metric, size);
+    }
+
     @GetMapping("/playlists/{playlistId}")
     public PlaylistResponse getPlaylist(
             @CurrentUser(required = false) AuthUser authUser,

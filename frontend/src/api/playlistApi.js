@@ -12,6 +12,15 @@ export function getPublicPlaylists({ keyword = '', searchType = 'title', sort = 
   return apiRequest(`/api/playlists?${params.toString()}`, { skipAuth: true })
 }
 
+export function getPublicPlaylistRankings({ metric = 'reaction', size = 5 } = {}) {
+  const params = new URLSearchParams({
+    metric,
+    size: String(size),
+  })
+
+  return apiRequest(`/api/playlists/ranking?${params.toString()}`, { skipAuth: true })
+}
+
 export function getPlaylist(playlistId) {
   return apiRequest(`/api/playlists/${playlistId}`)
 }

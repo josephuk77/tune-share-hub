@@ -26,6 +26,7 @@ public class PlaylistService {
     private static final String SORT_VIEW = "view";
     private static final String SORT_LIKE = "like";
     private static final String SORT_COMMENT = "comment";
+    private static final String RANKING_REACTION = "reaction";
 
     private final PlaylistMapper playlistMapper;
     private final PlaylistTrackMapper playlistTrackMapper;
@@ -107,6 +108,15 @@ public class PlaylistService {
                         offset,
                         size
                 )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PlaylistResponse> getPublicPlaylistRankings(String metric, int size) {
+        String normalizedMetric = normalizeRankingMetric(metric);
+        return playlistMapper.findPublicPlaylistRankings(normalizedMetric, size)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -307,5 +317,18 @@ public class PlaylistService {
             return normalizedSort;
         }
         throw new BusinessException("INVALID_SORT", "정렬 값이 올바르지 않습니다.");
+    }
+
+    private String normalizeRankingMetric(String metric) {
+        if (metric == null || metric.isBlank()) {
+            return RANKING_REACTION;
+        }
+
+        String normalizedMetric = metric.trim().toLowerCase(Locale.ROOT);
+        if (RANKING_REACTION.equals(normalizedMetric) || SORT_LIKE.equals(normalizedMetric)
+                || SORT_COMMENT.equals(normalizedMetric) || SORT_VIEW.equals(normalizedMetric)) {
+            return normalizedMetric;
+        }
+        throw new BusinessException("INVALID_RANKING_METRIC", "랭킹 기준이 올바르지 않습니다.");
     }
 }

@@ -554,7 +554,7 @@ export function PlaylistDetailPage({ currentUser, onBack, onSelectPlaylist, play
   }
 
   return (
-    <AppShell>
+    <AppShell activePage="public-playlists">
       <main className="workspace detail-workspace">
         <section className="workspace-header">
           <div>
